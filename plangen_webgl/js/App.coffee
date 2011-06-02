@@ -1,11 +1,46 @@
 
+class Grid
+	vertexBuffer = null
+
+	constructor:(@gl, @width, @height, @blockHalfSize, @shaderProgram, @app) ->
+
+	generateVertices: ->
+		vertices = []
+		xLen = @width / @blockHalfSize
+		for i in [0..xLen]
+			yLen = @height / @blockHalfSize
+			for j in [0..yLen]
+#				vertices = vertices + [i*@blockHalfSize, j*@blockHalfSize, 0,]
+				vertices.push i*@blockHalfSize, j*@blockHalfSize, 0
+		return vertices
+#		return [0,0,0, 2,0,0, 1,2,0, -1,-1,0]
+
+	init: ->
+		vertexBuffer = @gl.createBuffer()
+		@gl.bindBuffer @gl.ARRAY_BUFFER, vertexBuffer
+		vertices = this.generateVertices()
+		#alert "vertices are " + vertices
+		@gl.bufferData @gl.ARRAY_BUFFER, new Float32Array(vertices), @gl.STATIC_DRAW
+		vertexBuffer.itemSize = 3
+		vertexBuffer.numItems = vertices.length / vertexBuffer.itemSize
+
+	draw: ->
+		@gl.bindBuffer @gl.ARRAY_BUFFER, vertexBuffer
+		@gl.vertexAttribPointer @shaderProgram.vertexPositionAttribute, vertexBuffer.itemSize, @gl.FLOAT, false, 0, 0
+		@app.setMatrixUniforms()
+		@gl.drawArrays @gl.LINE_STRIP, 0, vertexBuffer.numItems
+
+width = 500
+height = 500
+
 class App
 	gl = null
 	mvMatrix = mat4.create()
 	pMatrix = mat4.create()
 	shaderProgram = null
+	grid = null
 
-	constuctor: ->
+	constructor: ->
 
 	initGl:(canvas) ->
 		try
@@ -85,13 +120,13 @@ class App
 		triangleVertexPositionBuffer.numItems = 3 
 
 		squareVertexPositionBuffer = gl.createBuffer()
-		gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer)
+		gl.bindBuffer gl.ARRAY_BUFFER, squareVertexPositionBuffer
 		vertices = [
 			1.0,  1.0,  0.0,
 			-1.0,  1.0,  0.0,
 			1.0, -1.0,  0.0,
 			-1.0, -1.0,  0.0]
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+		gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
 		squareVertexPositionBuffer.itemSize = 3
 		squareVertexPositionBuffer.numItems = 4
 
@@ -103,17 +138,23 @@ class App
 
 		mat4.identity(mvMatrix)
 
-		mat4.translate(mvMatrix, [-1.5, 0.0, -7.0])
-		gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
-		gl.vertexAttribPointer this.shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0
-		this.setMatrixUniforms()
-		gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems)
+#		mat4.translate(mvMatrix, [-1.5, 0.0, -7.0])
 
-		mat4.translate(mvMatrix, [3.0, 0.0, 0.0])
-		gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer)
-		gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
-		this.setMatrixUniforms()
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems)
+		grid.draw()
+
+#		mat4.translate(mvMatrix, [-1.5, 0.0, -7.0])
+#		gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+#		gl.vertexAttribPointer this.shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0
+#		this.setMatrixUniforms()
+#		gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems)
+#
+#		mat4.translate(mvMatrix, [3.0, 0.0, 0.0])
+#		gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer)
+#		gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+#		this.setMatrixUniforms()
+#		gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems)
+
+
 
 	init: ->
 		canvas = document.getElementById("webGlCanvas")
@@ -121,8 +162,12 @@ class App
 		this.initShaders()
 		this.initBuffers()
 
+		grid = new Grid(gl, width, height, 5, this.shaderProgram, this)
+		grid.init()
+
 	mainLoop: ->
 		this.drawScene()
+		grid.draw()
 
 webGlStart = () ->
   #canvas = document.getElementById "webGlCanvas"
