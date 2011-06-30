@@ -107,7 +107,53 @@ class GameView extends GameEventListener {
   } 
 }
 
-class Entity {
+
+class Triangle {
+  float x1,y1,z1;
+  float x2,y2,z2;
+  float x3,y3,z3;
+
+  public Triangle(float x1, float y1, float z1,
+      float x2, float y2, float z2,
+      float x3, float y3, float z3
+      ) {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.z1 = z1;
+
+    this.x2 = x2;
+    this.y2 = y2;
+    this.z2 = z2;
+
+    this.x3 = x3;
+    this.y3 = y3;
+    this.z3 = z3;
+  }
+
+  float getX1() { return x1; }
+  float getY1() { return y1; }
+  float getZ1() { return z1; }
+
+  float getX2() { return x2; }
+  float getY2() { return y2; }
+  float getZ2() { return z2; }
+
+  float getX3() { return x3; }
+  float getY3() { return y3; }
+  float getZ3() { return z3; }
+}
+
+class Point2 {
+  float x, y;
+  Point2(float x, float y) {
+    this.x = x;
+    this.y = y;
+  }
+  public float getX() { return x; }
+  public float getY() { return y; }
+}
+
+abstract class Entity {
   protected int type;
   protected int x, y;
 
@@ -123,6 +169,11 @@ class Entity {
   public int getType() { return type; }
   public int getX() { return x; }
   public int getY() { return y; }
+
+  public abstract ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy);
+
+  public abstract ArrayList<Point2> getUVCoords();
+
 }
 
 class Room extends Entity {
@@ -134,6 +185,78 @@ class Room extends Entity {
   }
   public int getWt() { return wt; }
   public int getHt() { return ht; }
+
+  private ArrayList<Triangle> extrudeLineSegTo3D(int x1, int z1, int x2, int z2, float lowY, float highY) {
+    //Two triangles : 
+    // (x1,z1)   (x2,z2)
+    // * ------- * highY
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * lowY
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
+//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
+
+    res.add(new Triangle(x1,highY,z1, x1,lowY, z1, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x2, highY, z2, x2,lowY,z2));
+    return res; 
+  }
+
+  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    //TODO:Offset room coords by camera pos
+    res.addAll(extrudeLineSegTo3D(x,y, x+wt,y, lowY, highY));
+    res.addAll(extrudeLineSegTo3D(x,y, x,y+ht, lowY, highY));
+    res.addAll(extrudeLineSegTo3D(x+wt,y, x+wt,y+ht, lowY, highY));
+    res.addAll(extrudeLineSegTo3D(x,y+ht, x+wt,y+ht, lowY, highY));
+
+    return res;
+  }
+
+  public ArrayList<Point2> getUVCoords() {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+    float amount = 6.0;
+    // TODO:Verify this is correct.
+    res.add(new Point2(0,amount));
+    res.add(new Point2(0,0));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(amount,amount));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(0,0));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(amount,amount));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(0,0));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(amount,amount));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(0,0));
+    res.add(new Point2(amount,0));
+
+    res.add(new Point2(0,amount));
+    res.add(new Point2(amount,amount));
+    res.add(new Point2(amount,0));
+
+    return res;
+  }
 }
 
 /*
@@ -145,10 +268,10 @@ class Hallway extends Entity {
 */
 
 class GameLogic extends GameEventListener{
-  protected ArrayList entities;
+  protected ArrayList<Entity> entities;
 
   public GameLogic() {
-    entities = new ArrayList();
+    entities = new ArrayList<Entity>();
   }
 
   //Factory method
@@ -161,15 +284,46 @@ class GameLogic extends GameEventListener{
   public void generateGrid(int roomLength, int max) {
     for(int i = 0 ; i < max ; i++) {
       for(int j = 0 ; j < max ; j++) {
-        if((i != max/2)){
+        if((i % 2 != 1) && (j % 2 != 1)){
           createRoom(i*roomLength,j*roomLength,roomLength,roomLength);
         }
       }
     }
   }
 
+  public String extrudeEntities(int camx, int camy, ArrayList<Entity> entities) {
+    String resultStr = "";
+    //Cycle through entities and output their vertices
+    for(Entity e : entities) {
+      ArrayList<Triangle> triangles = e.getTriangles(0,1, camx,camy);
+      ArrayList<Point2> uvCoords = e.getUVCoords();
+      int i = 0;
+      for(Triangle tri : triangles) {
+        resultStr += Float.toString(tri.getX1()) + "  " +
+          Float.toString(tri.getY1()) + "  " +
+          Float.toString(tri.getZ1()) + " " +
+          Float.toString(uvCoords.get(i).getX()) + " " +
+          Float.toString(uvCoords.get(i++).getY()) + "\n" +
+          Float.toString(tri.getX2()) + "  " +
+          Float.toString(tri.getY2()) + "  " +
+          Float.toString(tri.getZ2()) + "  " +
+          Float.toString(uvCoords.get(i).getX()) + " " + 
+          Float.toString(uvCoords.get(i++).getY()) + "\n" +
+          Float.toString(tri.getX3()) + "  " +
+          Float.toString(tri.getY3()) + "  " +
+          Float.toString(tri.getZ3()) + " " +
+          Float.toString(uvCoords.get(i).getX()) + " " +
+          Float.toString(uvCoords.get(i++).getY()) + "\n";
+      }
+    }
+    return resultStr;
+  }
+
   public void init() {
     generateGrid(7,7);
+
+    String entityStr = extrudeEntities(10,10,entities);
+    System.out.println("Entities: " + entityStr);
   }
 
   public void update() {

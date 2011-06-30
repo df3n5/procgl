@@ -1,0 +1,2 @@
+# Module com.googlecode.gwtgl.example.GwtGL_examples
+# RPC service class, partial path of RPC policy file
