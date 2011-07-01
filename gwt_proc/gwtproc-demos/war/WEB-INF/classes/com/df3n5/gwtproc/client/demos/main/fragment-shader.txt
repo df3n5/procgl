@@ -45,3 +45,163 @@ void main(void) {
 	
 	gl_FragColor = mix(uColor1, uColor0, delta);
 }
+
+/*
+//Procedurally generated AA checkboard texture.
+#ifdef GL_ES
+precision highp float;
+#endif
+
+//TODO : Pass in as uniform
+float uFrequency = 2.0;
+vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
+vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+
+varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+	vec4 color;
+	vec2 st_width;
+	vec2 fuzz;
+	vec2 check_pos;
+	float fuzz_max;
+	
+	//calc the filter width
+	//st_width = fwidth(vTextureCoord);
+	st_width.s = fwidth(vTextureCoord.s);
+	st_width.t = fwidth(vTextureCoord.t);
+	fuzz = st_width * uFrequency * 2.0;
+	fuzz_max = max(fuzz.s, fuzz.t);
+	
+	//get the place in the pattern where we are sampling
+	check_pos = fract(vTextureCoord * uFrequency);
+	
+	if( fuzz_max <= 0.5 )
+	{
+		//if the filter width is small enough, compute the pattern
+		// color by performing a smooth interpolation between the 
+		// computed color and the average color
+		
+		vec2 p = smoothstep( vec2(0.5), fuzz + vec2(0.5), check_pos)
+		+ (1.0 - smoothstep(vec2(0.0), fuzz, check_pos));
+		
+		//XXX: Assigning twice? This is MADNESS!
+		color = mix(uColor0, uColor1,
+			p.x * p.y + (1.0 - p.x) * (1.0 - p.y));
+		color = mix(color, (uColor0 + uColor1)/2.0,
+			smoothstep(0.125,0.5, fuzz_max));
+	}
+	else
+	{
+		//filter is too wide. just use the average color.
+		color = (uColor0 + uColor1)/2.0;
+	}
+	
+	gl_FragColor = color;
+}
+*/
+/*
+#extension GL_OES_standard_derivatives : enable
+
+precision highp float;
+
+float uFrequency = 2.0;
+vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
+vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+
+varying vec2    vTextureCoord;
+
+void
+main()
+{
+   vec4   color;
+   vec2   st_width;
+   vec2   fuzz;
+   vec2   pmod;
+   float  fuzz_max;
+   
+   // determine the filter width
+   st_width = fwidth(vTextureCoord);
+   
+   // calculate the fuzziness taking normal into account
+   fuzz = st_width * float(uFrequency) * 2.0;
+ 
+   fuzz_max = max(fuzz.s, fuzz.t);
+   
+   // calculate position in the checkerboard pattern
+   pmod = fract(vTextureCoord * float(uFrequency));
+   
+   // if the filter width is small enough, compute the pattern color
+   if (fuzz_max <= 0.5)
+   {
+      vec2   p = smoothstep(vec2(0.5), fuzz + vec2(0.5), pmod) + (1.0 - smoothstep(vec2(0.0), fuzz, pmod));
+      
+      color = mix(uColor0, uColor1, p.x * p.y + (1.0 - p.x) * (1.0 - p.y));
+      
+      // gradually fade in the average color when we get close to the limit
+      color = mix(color, (uColor0 + uColor1)/2.0, smoothstep(0.125, 0.5, fuzz_max));
+   }
+   else
+   {
+      // otherwise, use only the average color
+      color = (uColor0 + uColor1)/2.0;
+   }
+   
+   gl_FragColor = color;
+}
+*/
+/*
+//Per frag lighting
+precision mediump float;
+
+uniform vec4 uAmbient;
+uniform vec4 uSpecular;
+uniform vec4 uDiffuse;
+uniform float uSpecularPower;
+
+uniform sampler2D sBaseMap;
+uniform sampler2D sBumpMap;
+
+varying vec2 vTexCoord;
+varying vec3 vViewDirection;
+varying vec3 vLightDirection;
+
+void main( void )
+{
+   // Fetch basemap color
+   vec4 baseColor = texture2D( sBaseMap, vTexCoord );
+   
+   // Fetch the tangent space normal from normal map
+   vec3 normal = texture2D( sBumpMap, vTexCoord ).xyz;
+   
+   // Scale and bias from [0, 1] to [-1, 1] and normalize
+   normal = normalize( normal * 2.0 - 1.0 );
+   
+   // Normalize the light direction and view direction
+   vec3 lightDirection = normalize( vLightDirection );
+   vec3 viewDirection = normalize( vViewDirection );
+   
+   // Compute N.L
+   float nDotL = dot( normal, lightDirection );
+   
+   // Compute reflection vector
+   vec3 reflection = ( 2.0 * normal * nDotL ) - lightDirection;
+   
+   // Compute R.V
+   float rDotV = max( 0.0, dot( reflection, viewDirection ) );
+   
+   // Compute Ambient term
+   vec4 ambient = uAmbient * baseColor;
+   
+   // Compute Diffuse term
+   vec4 diffuse = uDiffuse * nDotL * baseColor;
+   
+   // Compute Specular term
+   vec4 specular = uSpecular * pow( rDotV, uSpecularPower );
+   
+   // Output final color
+   gl_FragColor = ambient + diffuse + specular;     
+}
+*/
