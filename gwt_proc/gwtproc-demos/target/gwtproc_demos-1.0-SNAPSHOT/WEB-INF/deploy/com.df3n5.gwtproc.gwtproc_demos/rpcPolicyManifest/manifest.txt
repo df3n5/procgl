@@ -1,0 +1,2 @@
+# Module com.df3n5.gwtproc.gwtproc_demos
+# RPC service class, partial path of RPC policy file
