@@ -424,11 +424,11 @@ public class MainDemo extends AbstractGwtProcDemo {
 		//glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, mudTexture);
 		glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, wallTexture);
 		glContext.uniform1i(textureUniform, 0);
-		
+
 		//Load the vertex texture data into buffer
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexTextureCoordBuffer);
 		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
-	    
+
 		//load vertex data into buffer.
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexPositionBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
