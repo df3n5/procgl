@@ -74,13 +74,25 @@ public class MainDemo extends AbstractGwtProcDemo {
 	private WebGLTexture mudTexture;
 	private WebGLTexture wallTexture;
 	private WebGLUniformLocation textureUniform;
+	private WebGLUniformLocation procTextureTypeUniform;
 	private WebGLProgram shaderProgram;
 	private WebGLBuffer skyboxBuffer;
 	private WebGLBuffer skyboxTextureBuffer;
 	
-	private WebGLBuffer worldVertexPositionBuffer;
-	private WebGLBuffer worldVertexTextureCoordBuffer;
-	private int mapVertexCount;
+	//Walls
+	private WebGLBuffer wallsVertexPosBuffer;
+	private WebGLBuffer wallsVertexTextureCoordBuffer;
+	private int wallsVertexCount;
+	
+	//Floor
+	private WebGLBuffer floorVertexPosBuffer;
+	private WebGLBuffer floorVertexTextureCoordBuffer;
+	private int floorVertexCount;
+	
+	//Ceiling
+	private WebGLBuffer ceilingVertexPosBuffer;
+	private WebGLBuffer ceilingVertexTextureCoordBuffer;
+	private int ceilingVertexCount;
 
 	private float translateZ = 0.5f;
 	private FloatMatrix perspectiveMatrix;
@@ -121,11 +133,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 		setWidget(1, 1, descriptionAndControls);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.googlecode.gwtgl.example.client.AbstractGwtGLExample#init()
-	 */
 	@Override
 	protected void init() {
 		initParams();
@@ -133,7 +140,10 @@ public class MainDemo extends AbstractGwtProcDemo {
 		initShaders();
 		initSkyBox();
 		initControls();
+		
 		initWorld();
+		initCeiling();
+		initFloor();
 		
 		showMatrices();
 	}
@@ -201,7 +211,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    Vector<Float> vertexPositions = new Vector();
 	    Vector<Float> vertexTextureCoords = new Vector();
 	    
-	    mapVertexCount = 0;
+	    wallsVertexCount = 0;
 	    
 	    for (String line : lines) {
 	    	/*
@@ -257,18 +267,125 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	vertexTextureCoords.add(Float.parseFloat(tokenizer.nextToken()));
 */
 		    	
-		    	mapVertexCount++;
+		    	wallsVertexCount++;
     		}
 	    }
 	    
-	    worldVertexPositionBuffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexPositionBuffer);
+	    wallsVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexPosBuffer);
 		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
 				Float32Array.create(convertToFloatArray(vertexPositions)), 
 				WebGLRenderingContext.STATIC_DRAW);
 		
-		worldVertexTextureCoordBuffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexTextureCoordBuffer);
+		wallsVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
+	public void initCeiling() {
+		String ceilingStr = Resources.INSTANCE.ceiling().getText();
+	    String[] lines = ceilingStr.split("\n");
+	    Vector<Float> vertexPositions = new Vector();
+	    Vector<Float> vertexTextureCoords = new Vector();
+	    
+	    for (String line : lines) {
+	    	if(line.equals(""))
+	    	{
+	    		continue;
+	    	}
+    		StringTokenizer tokenizer = new StringTokenizer(line);
+    		String token = tokenizer.nextToken();
+    		if( ! token.equals("//")) {
+		    	/*
+		    	 * The format is:
+		    	 *  vP vP vP tC tC
+		    	 */
+
+    			float xCoord = Float.parseFloat(token);
+		    	String yCoord = tokenizer.nextToken();
+		    	String zCoord = tokenizer.nextToken();
+		    	String uCoord = tokenizer.nextToken();
+		    	String vCoord = tokenizer.nextToken();
+		    	
+		    	// Move 6 along x axis
+		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	
+		    	vertexPositions.add(xCoord);
+		    	vertexPositions.add(Float.parseFloat(yCoord));
+		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	
+		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
+		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
+		    	
+		    	ceilingVertexCount++;
+    		}
+	    }
+	    ceilingVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		ceilingVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
+
+	public void initFloor() {
+		String floorStr = Resources.INSTANCE.floor().getText();
+	    String[] lines = floorStr.split("\n");
+	    Vector<Float> vertexPositions = new Vector();
+	    Vector<Float> vertexTextureCoords = new Vector();
+	    
+	    for (String line : lines) {
+	    	if(line.equals(""))
+	    	{
+	    		continue;
+	    	}
+    		StringTokenizer tokenizer = new StringTokenizer(line);
+    		String token = tokenizer.nextToken();
+    		if( ! token.equals("//")) {
+		    	/*
+		    	 * The format is:
+		    	 *  vP vP vP tC tC
+		    	 */
+
+    			float xCoord = Float.parseFloat(token);
+		    	String yCoord = tokenizer.nextToken();
+		    	String zCoord = tokenizer.nextToken();
+		    	String uCoord = tokenizer.nextToken();
+		    	String vCoord = tokenizer.nextToken();
+		    	
+		    	// Move 6 along x axis
+		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	
+		    	vertexPositions.add(xCoord);
+		    	vertexPositions.add(Float.parseFloat(yCoord));
+		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	
+		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
+		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
+		    	
+		    	floorVertexCount++;
+    		}
+	    }
+	    floorVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		floorVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexTextureCoordBuffer);
 		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
 				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
 				WebGLRenderingContext.STATIC_DRAW);
@@ -370,6 +487,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 
 		textureUniform = glContext.getUniformLocation(shaderProgram, "uSampler");
 
+		procTextureTypeUniform = glContext.getUniformLocation(shaderProgram, "uProcTextureType");
+		
 		checkErrors();
 	}
 
@@ -386,7 +505,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		// Use the program object
 		glContext.useProgram(shaderProgram);
 		
-	    if (worldVertexTextureCoordBuffer == null || worldVertexPositionBuffer == null) {
+	    if (wallsVertexTextureCoordBuffer == null || wallsVertexPosBuffer == null) {
 	        return;
     	}
 	    
@@ -408,31 +527,35 @@ public class MainDemo extends AbstractGwtProcDemo {
 		rotationMatrix = MatrixUtil.createRotationMatrix(camera.getRotationXAxis(), camera.getRotationYAxis(), 0);
 		*/
 
+		
+		//Set common uniforms
+		WebGLUniformLocation mvUniform = glContext.getUniformLocation(shaderProgram, "uMVMatrix");
+		glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
+		WebGLUniformLocation projectionUniform = glContext.getUniformLocation(shaderProgram, "uPMatrix");
+		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
+		
 	    //Setup Texture info ready for shader to process.
+		//XXX:Remove this?
 		glContext.activeTexture(WebGLRenderingContext.TEXTURE0);
 		//glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, mudTexture);
 		glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, wallTexture);
 		glContext.uniform1i(textureUniform, 0);
 
 		//Load the vertex texture data into buffer
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexTextureCoordBuffer);
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexTextureCoordBuffer);
 		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
 
 		//load vertex data into buffer.
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexPositionBuffer);
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexPosBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
-		//Set uniforms
-		WebGLUniformLocation mvUniform = glContext.getUniformLocation(shaderProgram, "uMVMatrix");
-		glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
-		WebGLUniformLocation projectionUniform = glContext.getUniformLocation(shaderProgram, "uPMatrix");
-		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
-		
-		//Draw damn you!
-	    glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, mapVertexCount);
+		//Draw walls you!
+		glContext.uniform1i(procTextureTypeUniform, 0);
+	    glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, wallsVertexCount);
 	    
 	    //Skybox!
 		//Vertex pos attrib
+		glContext.uniform1i(procTextureTypeUniform, 1);
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, skyboxBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
@@ -442,6 +565,35 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, 36);
 		glContext.flush();
+		
+		//Ceiling
+		//Vertex pos attrib
+		glContext.uniform1i(procTextureTypeUniform, 0);
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexPosBuffer);
+		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+		//Load the vertex texture data into buffer
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexTextureCoordBuffer);
+		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+		
+		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, ceilingVertexCount);
+		glContext.flush();
+		
+		
+		//floor
+		//Vertex pos attrib
+		glContext.uniform1i(procTextureTypeUniform, 2);
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexPosBuffer);
+		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+		//Load the vertex texture data into buffer
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexTextureCoordBuffer);
+		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+		
+		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, floorVertexCount);
+		glContext.flush();
+		
+		
+		
+		//Floor
 		
 	    /*
 		// Load the vertex data

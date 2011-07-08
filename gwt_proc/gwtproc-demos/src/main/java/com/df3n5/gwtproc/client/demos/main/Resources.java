@@ -47,6 +47,12 @@ public interface Resources extends ClientBundle {
 	
 	@Source(value = { "map.txt" })
 	TextResource map();
+	
+	@Source(value = { "ceiling.txt" })
+	TextResource ceiling();
+	
+	@Source(value = { "floor.txt" })
+	TextResource floor();
 
 	/**
 	 * Front skybox texture
