@@ -53,7 +53,7 @@ import com.googlecode.gwtgl.binding.WebGLUniformLocation;
  */
 public class MainDemo extends AbstractGwtProcDemo {
 
-	private Mesh skyCube = CubeFactory.createNewInstance(1.0f);
+	private Mesh skyCube = CubeFactory.createNewInstance(100.0f);
 	private Mesh cube = CubeFactory.createNewInstance(0.3f);
 	/*
 	private MatrixWidget perspectiveMatrixWidget;
@@ -75,7 +75,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	private WebGLTexture wallTexture;
 	private WebGLUniformLocation textureUniform;
 	private WebGLProgram shaderProgram;
-	private WebGLBuffer buffer;
+	private WebGLBuffer skyboxBuffer;
+	private WebGLBuffer skyboxTextureBuffer;
 	
 	private WebGLBuffer worldVertexPositionBuffer;
 	private WebGLBuffer worldVertexTextureCoordBuffer;
@@ -130,7 +131,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		initParams();
 		initTexture();
 		initShaders();
-		initBuffers();
+		initSkyBox();
 		initControls();
 		initWorld();
 		
@@ -148,6 +149,49 @@ public class MainDemo extends AbstractGwtProcDemo {
 			result[i] = vec.elementAt(i).floatValue();
 		}
 		return result;
+	}
+	
+	/**
+	 * Initializes the buffers for vertex coordinates, normals and texture
+	 * coordinates.
+	 */
+	private void initSkyBox() {
+		skyboxBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, skyboxBuffer);
+		
+		//Skycube
+		Float32Array vertices = Float32Array.create(skyCube.getVertices());
+		texCoordsOffset = vertices.getByteLength();
+		Float32Array texCoords = Float32Array.create(skyCube.getTexCoords());
+		/*
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+				vertices.getByteLength() + texCoords.getByteLength(),
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		glContext.bufferSubData(WebGLRenderingContext.ARRAY_BUFFER, 0, vertices);
+		glContext.bufferSubData(WebGLRenderingContext.ARRAY_BUFFER,
+				texCoordsOffset, texCoords);
+				*/
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+				vertices,
+				WebGLRenderingContext.STATIC_DRAW);
+		skyboxTextureBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, skyboxTextureBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, Float32Array.create(skyCube.getTexCoords()), WebGLRenderingContext.STATIC_DRAW);
+		/*
+		
+		vertexBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+				Float32Array.create(cube.getVertices()),
+				WebGLRenderingContext.STATIC_DRAW);
+		vertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, Float32Array.create(cube.getTexCoords()), WebGLRenderingContext.STATIC_DRAW);
+		
+		
+		checkErrors();
+		*/
 	}
 	
 	public void initWorld() {
@@ -217,20 +261,6 @@ public class MainDemo extends AbstractGwtProcDemo {
     		}
 	    }
 	    
-	    /*
-	    worldVertexPositionBuffer = gl.createBuffer();
-	    gl.bindBuffer(gl.ARRAY_BUFFER, worldVertexPositionBuffer);
-	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertToFloatArray(vertexPositions)), gl.STATIC_DRAW);
-	    worldVertexPositionBuffer.itemSize = 3;
-	    worldVertexPositionBuffer.numItems = vertexCount;
-
-	    worldVertexTextureCoordBuffer = gl.createBuffer();
-	    gl.bindBuffer(gl.ARRAY_BUFFER, worldVertexTextureCoordBuffer);
-	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexTextureCoords), gl.STATIC_DRAW);
-	    worldVertexTextureCoordBuffer.itemSize = 2;
-	    worldVertexTextureCoordBuffer.numItems = vertexCount;
-	    */
-	    
 	    worldVertexPositionBuffer = glContext.createBuffer();
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, worldVertexPositionBuffer);
 		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
@@ -253,15 +283,9 @@ public class MainDemo extends AbstractGwtProcDemo {
 		Timer timer = new Timer() {
 			@Override
 			public void run() {
-				/*
-				perspectiveMatrixWidget.setData(perspectiveMatrix);
-				translationMatrixWidget.setData(translationMatrix);
-				rotationMatrixWidget.setData(rotationMatrix);
-				resultingMatrixWidget.setData(resultingMatrix);
-				*/
 			}
 		};
-		timer.scheduleRepeating(500);
+		//timer.scheduleRepeating(500);
 	}
 
 	/**
@@ -349,42 +373,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		checkErrors();
 	}
 
-	/**
-	 * Initializes the buffers for vertex coordinates, normals and texture
-	 * coordinates.
-	 */
-	private void initBuffers() {
-		/*
-		buffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, buffer);
-		
-		Float32Array vertices = Float32Array.create(skyCube.getVertices());
-		texCoordsOffset = vertices.getByteLength();
-		Float32Array texCoords = Float32Array.create(skyCube.getTexCoords());
-		
-		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-				vertices.getByteLength() + texCoords.getByteLength(),
-				WebGLRenderingContext.STATIC_DRAW);
-		
-		glContext
-				.bufferSubData(WebGLRenderingContext.ARRAY_BUFFER, 0, vertices);
-		glContext.bufferSubData(WebGLRenderingContext.ARRAY_BUFFER,
-				texCoordsOffset, texCoords);
-		
-		
-		vertexBuffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
-		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-				Float32Array.create(cube.getVertices()),
-				WebGLRenderingContext.STATIC_DRAW);
-		vertexTextureCoordBuffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
-		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, Float32Array.create(cube.getTexCoords()), WebGLRenderingContext.STATIC_DRAW);
-		
-		
-		checkErrors();
-		*/
-	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -441,6 +430,18 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		//Draw damn you!
 	    glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, mapVertexCount);
+	    
+	    //Skybox!
+		//Vertex pos attrib
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, skyboxBuffer);
+		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+		
+		//Load the vertex texture data into buffer
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, skyboxTextureBuffer);
+		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+		
+		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, 36);
+		glContext.flush();
 		
 	    /*
 		// Load the vertex data

@@ -389,16 +389,24 @@ void main(void) {
 	n = n * 0.7;
 	*/
 	
-	float n = 0.1; //x coord of surface location
+	float n = 0.5; //x coord of surface location
 	n += snoise(uvw - vec3(0.0, 0.0, time));
 	n += 0.5 * snoise(uvw * 2.0 - vec3(0.0, 0.0, time*1.4));
 	n += 0.25 * snoise(uvw * 4.0 - vec3(0.0, 0.0, time*2.0));
 	n += 0.125 * snoise(uvw * 8.0 - vec3(0.0, 0.0, time*2.8));
 	n += 0.0625 * snoise(uvw * 16.0 - vec3(0.0, 0.0, time*4.0));
 	n += 0.03125 * snoise(uvw * 32.0 - vec3(0.0, 0.0, time*5.6));
-	n = sin(n * 0.7);
+	n = sin(n);
 
-	gl_FragColor = vec4(vec3(1.0, 0.5, 0.0) + vec3(n, n, n), 1.0);
+	//gl_FragColor = vec4(vec3(1.0, 0.5, 0.0) + vec3(n, n, n), 1.0);
+	//gl_FragColor = vec4(vec3(0.0, 0.0, 0.1) + vec3(n, n, n), 1.0);
+//	gl_FragColor = vec4( vec3(0.549020,0.815686,0.925490) + vec3(n,n,n), 1.0);
+//	gl_FragColor = vec4( vec3(0.549020*n,0.815686 *n, 0.925490*n), 1.0); //Blue + black, if we could invert...
+	gl_FragColor = vec4( vec3(1.0 - (0.450980*n),1.0-(0.184314*n), 1.0 - (0.074510*n)), 1.0); //Inverted?
+//	gl_FragColor = vec4( vec3(1.0 - (0.549020*n),1.0-(0.815686*n), 1.0 - (0.925490*n)), 1.0);
+//	gl_FragColor = vec4( vec3((1.0 - n) * 0.549020,(1.0-n)*0.815686, (1.0 - n) * 0.925490), 1.0);
+//	gl_FragColor = vec4( vec3((1.0 - 0.549020) * n,(1.0-0.815686)*n, (1.0 - 0.925490) * n), 1.0); //desert
+
 
 	
 	//gl_FragColor = mix(uColor1, uColor0, delta);
