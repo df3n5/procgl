@@ -15,6 +15,7 @@
  */
 package com.df3n5.gwtproc.client.demos.main;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -45,22 +46,16 @@ import com.googlecode.gwtgl.binding.WebGLTexture;
 import com.googlecode.gwtgl.binding.WebGLUniformLocation;
 
 /**
- * Example that shows a skybox. User can look around using the mouse.
+ * Main Procedural generation demo
  * 
- * @author Steffen Schäfer
- * @author Sönke Sothmann
+ * @author Jonathan Frawley
  * 
  */
 public class MainDemo extends AbstractGwtProcDemo {
 
+	private static final boolean procOn = true;
+	
 	private Mesh skyCube = CubeFactory.createNewInstance(100.0f);
-	private Mesh cube = CubeFactory.createNewInstance(0.3f);
-	/*
-	private MatrixWidget perspectiveMatrixWidget;
-	private MatrixWidget translationMatrixWidget;
-	private MatrixWidget rotationMatrixWidget;
-	private MatrixWidget resultingMatrixWidget;
-	*/
 
 	private WebGLBuffer vertexBuffer;
 	private WebGLBuffer vertexTextureCoordBuffer;
@@ -141,9 +136,18 @@ public class MainDemo extends AbstractGwtProcDemo {
 		initSkyBox();
 		initControls();
 		
-		initWorld();
-		initCeiling();
-		initFloor();
+		if( !procOn)
+		{
+			initWorld();
+			initCeiling();
+			initFloor();
+		}
+		else
+		{
+			initWorld();
+			initCeilingProc();
+			initFloorProc();
+		}
 		
 		showMatrices();
 	}
@@ -339,6 +343,54 @@ public class MainDemo extends AbstractGwtProcDemo {
 		checkErrors();
 	}
 	
+	public void initCeilingProc() {
+	    Vector<Float> vertexPositions = new Vector<Float>();
+	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    
+	    Plane ceiling = new Plane(0,0, 1000,1000, 2);
+	    
+	    ArrayList<Triangle> triangles = ceiling.getTriangles();
+	    ArrayList<Point2> uvCoords = ceiling.getUVCoords();
+	    int i = 0;
+	    for(Triangle tri : triangles) {
+	    	vertexPositions.add(tri.getX1());
+	    	vertexPositions.add(tri.getY1());
+	    	vertexPositions.add(tri.getZ1());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX2());
+	    	vertexPositions.add(tri.getY2());
+	    	vertexPositions.add(tri.getZ2());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX3());
+	    	vertexPositions.add(tri.getY3());
+	    	vertexPositions.add(tri.getZ3());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	ceilingVertexCount += 3;
+	    }
+	    ceilingVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		ceilingVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
 
 	public void initFloor() {
 		String floorStr = Resources.INSTANCE.floor().getText();
@@ -377,6 +429,54 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	
 		    	floorVertexCount++;
     		}
+	    }
+	    floorVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		floorVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
+	public void initFloorProc() {
+	    Vector<Float> vertexPositions = new Vector<Float>();
+	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    
+	    Plane floor = new Plane(0,0, 1000,1000, 0);
+	    
+	    ArrayList<Triangle> triangles = floor.getTriangles();
+	    ArrayList<Point2> uvCoords = floor.getUVCoords();
+	    int i = 0;
+	    for(Triangle tri : triangles) {
+	    	vertexPositions.add(tri.getX1());
+	    	vertexPositions.add(tri.getY1());
+	    	vertexPositions.add(tri.getZ1());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX2());
+	    	vertexPositions.add(tri.getY2());
+	    	vertexPositions.add(tri.getZ2());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX3());
+	    	vertexPositions.add(tri.getY3());
+	    	vertexPositions.add(tri.getZ3());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	floorVertexCount += 3;
 	    }
 	    floorVertexPosBuffer = glContext.createBuffer();
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexPosBuffer);
@@ -492,8 +592,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 		checkErrors();
 	}
 
-
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -577,7 +675,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, ceilingVertexCount);
 		glContext.flush();
-		
 		
 		//floor
 		//Vertex pos attrib
