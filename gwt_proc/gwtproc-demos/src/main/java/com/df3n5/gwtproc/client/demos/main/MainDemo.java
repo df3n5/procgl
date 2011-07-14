@@ -227,11 +227,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    		continue;
 	    	}
 	    	String[] tokens = line.split("\\s");
-	    	System.out.println("tokens0 are : " + tokens[0]);
-	    	System.out.println("tokens1 are : " + tokens[1]);
-	    	System.out.println("tokens2 are : " + tokens[2]);
-	    	System.out.println("tokens3 are : " + tokens[3]);
-	    	System.out.println("tokens4 are : " + tokens[4]);
     		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
@@ -350,7 +345,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    	}
 	    	
 	    	String[] tokens = line.split("\\s");
-	    	System.out.println("tokens are : " + tokens);
     		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
@@ -452,7 +446,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    	}
 	    	
 	    	String[] tokens = line.split("\\s");
-	    	System.out.println("tokens are : " + tokens);
     		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
