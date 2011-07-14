@@ -144,7 +144,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		}
 		else
 		{
-			initWorld();
+			initWorldProc();
 			initCeilingProc();
 			initFloorProc();
 		}
@@ -270,6 +270,104 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	vertexTextureCoords.add(Float.parseFloat(tokenizer.nextToken()));
 		    	vertexTextureCoords.add(Float.parseFloat(tokenizer.nextToken()));
 */
+		    	
+		    	wallsVertexCount++;
+    		}
+	    }
+	    
+	    wallsVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		wallsVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
+
+	public ArrayList<Room> generateGrid(int roomLength, int max) {
+		ArrayList<Room> resultGrid = new ArrayList<Room>();
+		for(int i = 0 ; i < max ; i++) {
+			for(int j = 0 ; j < max ; j++) {
+				if((i % 2 != 1) && (j % 2 != 1)){
+					resultGrid.add(new Room(i*roomLength,j*roomLength,roomLength,roomLength));
+				}
+			}
+		}
+		return resultGrid;
+	}
+	
+	public void initWorldProc() {
+	    Vector<Float> vertexPositions = new Vector<Float>();
+	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    ArrayList<Room> rooms = generateGrid(7,7);
+	    
+	    wallsVertexCount = 0;
+	    
+	    for (Room room : rooms) {
+	    	ArrayList<Triangle> triangles = room.getTriangles(0, 2, 0, 0);
+		    ArrayList<Point2> uvCoords = room.getUVCoords();
+		    int i = 0;
+		    for(Triangle tri : triangles) {
+		    	vertexPositions.add(tri.getX1());
+		    	vertexPositions.add(tri.getY1());
+		    	vertexPositions.add(tri.getZ1());
+
+		    	vertexTextureCoords.add(uvCoords.get(i).getX());
+		    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+		    	vertexPositions.add(tri.getX2());
+		    	vertexPositions.add(tri.getY2());
+		    	vertexPositions.add(tri.getZ2());
+
+		    	vertexTextureCoords.add(uvCoords.get(i).getX());
+		    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+		    	vertexPositions.add(tri.getX3());
+		    	vertexPositions.add(tri.getY3());
+		    	vertexPositions.add(tri.getZ3());
+
+		    	vertexTextureCoords.add(uvCoords.get(i).getX());
+		    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+		    	ceilingVertexCount += 3;
+		    }
+	    }
+	    
+   for (String line : lines) {
+	    	if(line.equals(""))
+	    	{
+	    		continue;
+	    	}
+    		StringTokenizer tokenizer = new StringTokenizer(line);
+    		String token = tokenizer.nextToken();
+    		if( ! token.equals("//")) {
+		    	/*
+		    	 * The format is:
+		    	 *  vP vP vP tC tC
+		    	 */
+
+    			float xCoord = Float.parseFloat(token);
+		    	String yCoord = tokenizer.nextToken();
+		    	String zCoord = tokenizer.nextToken();
+		    	String uCoord = tokenizer.nextToken();
+		    	String vCoord = tokenizer.nextToken();
+		    	
+		    	// Move 6 along x axis
+		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	
+		    	vertexPositions.add(xCoord);
+		    	vertexPositions.add(Float.parseFloat(yCoord));
+		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	
+		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
+		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
 		    	
 		    	wallsVertexCount++;
     		}
