@@ -1,0 +1,2 @@
+Browser: Firefox 5.0
+Mode: Gwt Dev mode

@@ -1,7 +1,13 @@
 package com.df3n5.gwtproc.client.demos.main;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Vector;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import com.df3n5.gwtproc.client.AbstractGwtProcDemo;
 import com.df3n5.gwtproc.client.util.MatrixWidget;
@@ -13,6 +19,7 @@ import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.LoadEvent;
 import com.google.gwt.event.dom.client.LoadHandler;
+import com.google.gwt.logging.client.HtmlLogFormatter;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -111,12 +118,20 @@ public class MainDemo extends AbstractGwtProcDemo {
 		descriptionAndControls.add(exampleDescription);
 		setWidget(1, 1, descriptionAndControls);
 	}
+	
+	private long getTimeStampMilli() {
+        Date date = new Date();
+        return date.getTime();
+	}
 
 	@Override
 	protected void init() {
+		
+		long before = getTimeStampMilli();
+		
 		initParams();
 		
-		if( !procOn)
+		if( ! procOn )
 		{
 			initTexture();
 			initWorld();
@@ -133,6 +148,10 @@ public class MainDemo extends AbstractGwtProcDemo {
 		initShaders();
 		initSkyBox();
 		initControls();
+		
+		long after = getTimeStampMilli();
+		
+		System.out.println("Init: " + (after-before));
 		
 		//showMatrices();
 	}
