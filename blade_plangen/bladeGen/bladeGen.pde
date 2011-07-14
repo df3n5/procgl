@@ -324,18 +324,18 @@ class Plane {
     ArrayList<Point2> uvCoords = getUVCoords();
     int i = 0;
     for(Triangle tri : triangles) {
-      resultStr += Float.toString(tri.getX1()) + "  " +
-        Float.toString(tri.getY1()) + "  " +
+      resultStr += Float.toString(tri.getX1()) + " " +
+        Float.toString(tri.getY1()) + " " +
         Float.toString(tri.getZ1()) + " " +
         Float.toString(uvCoords.get(i).getX()) + " " +
         Float.toString(uvCoords.get(i++).getY()) + "\n" +
-        Float.toString(tri.getX2()) + "  " +
-        Float.toString(tri.getY2()) + "  " +
-        Float.toString(tri.getZ2()) + "  " +
+        Float.toString(tri.getX2()) + " " +
+        Float.toString(tri.getY2()) + " " +
+        Float.toString(tri.getZ2()) + " " +
         Float.toString(uvCoords.get(i).getX()) + " " + 
         Float.toString(uvCoords.get(i++).getY()) + "\n" +
-        Float.toString(tri.getX3()) + "  " +
-        Float.toString(tri.getY3()) + "  " +
+        Float.toString(tri.getX3()) + " " +
+        Float.toString(tri.getY3()) + " " +
         Float.toString(tri.getZ3()) + " " +
         Float.toString(uvCoords.get(i).getX()) + " " +
         Float.toString(uvCoords.get(i++).getY()) + "\n";
@@ -376,18 +376,18 @@ class GameLogic extends GameEventListener{
       ArrayList<Point2> uvCoords = e.getUVCoords();
       int i = 0;
       for(Triangle tri : triangles) {
-        resultStr += Float.toString(tri.getX1()) + "  " +
-          Float.toString(tri.getY1()) + "  " +
+        resultStr += Float.toString(tri.getX1()) + " " +
+          Float.toString(tri.getY1()) + " " +
           Float.toString(tri.getZ1()) + " " +
           Float.toString(uvCoords.get(i).getX()) + " " +
           Float.toString(uvCoords.get(i++).getY()) + "\n" +
-          Float.toString(tri.getX2()) + "  " +
-          Float.toString(tri.getY2()) + "  " +
-          Float.toString(tri.getZ2()) + "  " +
+          Float.toString(tri.getX2()) + " " +
+          Float.toString(tri.getY2()) + " " +
+          Float.toString(tri.getZ2()) + " " +
           Float.toString(uvCoords.get(i).getX()) + " " + 
           Float.toString(uvCoords.get(i++).getY()) + "\n" +
-          Float.toString(tri.getX3()) + "  " +
-          Float.toString(tri.getY3()) + "  " +
+          Float.toString(tri.getX3()) + " " +
+          Float.toString(tri.getY3()) + " " +
           Float.toString(tri.getZ3()) + " " +
           Float.toString(uvCoords.get(i).getX()) + " " +
           Float.toString(uvCoords.get(i++).getY()) + "\n";

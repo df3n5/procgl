@@ -1,22 +1,6 @@
-/**   
- * Copyright 2009-2010 Sönke Sothmann, Steffen Schäfer and others
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.df3n5.gwtproc.client.demos.main;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import com.df3n5.gwtproc.client.AbstractGwtProcDemo;
@@ -53,7 +37,7 @@ import com.googlecode.gwtgl.binding.WebGLUniformLocation;
  */
 public class MainDemo extends AbstractGwtProcDemo {
 
-	private static final boolean procOn = true;
+	private static final boolean procOn = false;
 	
 	private Mesh skyCube = CubeFactory.createNewInstance(100.0f);
 
@@ -131,13 +115,10 @@ public class MainDemo extends AbstractGwtProcDemo {
 	@Override
 	protected void init() {
 		initParams();
-		initTexture();
-		initShaders();
-		initSkyBox();
-		initControls();
 		
 		if( !procOn)
 		{
+			initTexture();
 			initWorld();
 			initCeiling();
 			initFloor();
@@ -148,8 +129,12 @@ public class MainDemo extends AbstractGwtProcDemo {
 			initCeilingProc();
 			initFloorProc();
 		}
+
+		initShaders();
+		initSkyBox();
+		initControls();
 		
-		showMatrices();
+		//showMatrices();
 	}
 	
 	/**
@@ -218,58 +203,36 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    wallsVertexCount = 0;
 	    
 	    for (String line : lines) {
-	    	/*
-	      String vals = line.replaceAll("/^\s+/", "").split("/\s+/");
-	      if (vals.length == 5 && vals[0] != "//") {
-	        // It is a line describing a vertex; get X, Y and Z first
-	        vertexPositions.push(parseFloat(vals[0]));
-	        vertexPositions.push(parseFloat(vals[1]));
-	        vertexPositions.push(parseFloat(vals[2]));
-
-	        // And then the texture coords
-	        vertexTextureCoords.push(parseFloat(vals[3]));
-	        vertexTextureCoords.push(parseFloat(vals[4]));
-
-	        vertexCount += 1;
-	      }
-	      */
-	    	//Window.alert("line is " + line);
 	    	if(line.equals(""))
 	    	{
 	    		continue;
 	    	}
-    		StringTokenizer tokenizer = new StringTokenizer(line);
-    		String token = tokenizer.nextToken();
-    		if( ! token.equals("//")) {
+	    	String[] tokens = line.split("\\s");
+	    	System.out.println("tokens0 are : " + tokens[0]);
+	    	System.out.println("tokens1 are : " + tokens[1]);
+	    	System.out.println("tokens2 are : " + tokens[2]);
+	    	System.out.println("tokens3 are : " + tokens[3]);
+	    	System.out.println("tokens4 are : " + tokens[4]);
+    		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-
-    			float xCoord = Float.parseFloat(token);
-		    	String yCoord = tokenizer.nextToken();
-		    	String zCoord = tokenizer.nextToken();
-		    	String uCoord = tokenizer.nextToken();
-		    	String vCoord = tokenizer.nextToken();
-		    	
+    			float xCoord = Float.parseFloat(tokens[0]);
+    			float yCoord = Float.parseFloat(tokens[1]);
+    			float zCoord = Float.parseFloat(tokens[2]);
+    			float uCoord = Float.parseFloat(tokens[3]);
+    			float vCoord = Float.parseFloat(tokens[4]);
+    			
 		    	// Move 6 along x axis
-		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
 		    	
 		    	vertexPositions.add(xCoord);
-		    	vertexPositions.add(Float.parseFloat(yCoord));
-		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	vertexPositions.add(yCoord);
+		    	vertexPositions.add(zCoord);
 		    	
-		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
-		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
-
-/*
-		    	vertexPositions.add(Float.parseFloat(token));
-		    	vertexPositions.add(Float.parseFloat(tokenizer.nextToken()));
-		    	vertexPositions.add(Float.parseFloat(tokenizer.nextToken()));
-		    	
-		    	vertexTextureCoords.add(Float.parseFloat(tokenizer.nextToken()));
-		    	vertexTextureCoords.add(Float.parseFloat(tokenizer.nextToken()));
-*/
+		    	vertexTextureCoords.add(uCoord);
+		    	vertexTextureCoords.add(vCoord);
 		    	
 		    	wallsVertexCount++;
     		}
@@ -336,41 +299,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	vertexTextureCoords.add(uvCoords.get(i).getX());
 		    	vertexTextureCoords.add(uvCoords.get(i++).getY());
 
-		    	ceilingVertexCount += 3;
+		    	wallsVertexCount += 3;
 		    }
-	    }
-	    
-   for (String line : lines) {
-	    	if(line.equals(""))
-	    	{
-	    		continue;
-	    	}
-    		StringTokenizer tokenizer = new StringTokenizer(line);
-    		String token = tokenizer.nextToken();
-    		if( ! token.equals("//")) {
-		    	/*
-		    	 * The format is:
-		    	 *  vP vP vP tC tC
-		    	 */
-
-    			float xCoord = Float.parseFloat(token);
-		    	String yCoord = tokenizer.nextToken();
-		    	String zCoord = tokenizer.nextToken();
-		    	String uCoord = tokenizer.nextToken();
-		    	String vCoord = tokenizer.nextToken();
-		    	
-		    	// Move 6 along x axis
-		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
-		    	
-		    	vertexPositions.add(xCoord);
-		    	vertexPositions.add(Float.parseFloat(yCoord));
-		    	vertexPositions.add(Float.parseFloat(zCoord));
-		    	
-		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
-		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
-		    	
-		    	wallsVertexCount++;
-    		}
 	    }
 	    
 	    wallsVertexPosBuffer = glContext.createBuffer();
@@ -399,29 +329,29 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    	{
 	    		continue;
 	    	}
-    		StringTokenizer tokenizer = new StringTokenizer(line);
-    		String token = tokenizer.nextToken();
-    		if( ! token.equals("//")) {
+	    	
+	    	String[] tokens = line.split("\\s");
+	    	System.out.println("tokens are : " + tokens);
+    		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-
-    			float xCoord = Float.parseFloat(token);
-		    	String yCoord = tokenizer.nextToken();
-		    	String zCoord = tokenizer.nextToken();
-		    	String uCoord = tokenizer.nextToken();
-		    	String vCoord = tokenizer.nextToken();
-		    	
+    			float xCoord = Float.parseFloat(tokens[0]);
+    			float yCoord = Float.parseFloat(tokens[1]);
+    			float zCoord = Float.parseFloat(tokens[2]);
+    			float uCoord = Float.parseFloat(tokens[3]);
+    			float vCoord = Float.parseFloat(tokens[4]);
+    			
 		    	// Move 6 along x axis
-		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
 		    	
 		    	vertexPositions.add(xCoord);
-		    	vertexPositions.add(Float.parseFloat(yCoord));
-		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	vertexPositions.add(yCoord);
+		    	vertexPositions.add(zCoord);
 		    	
-		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
-		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
+		    	vertexTextureCoords.add(uCoord);
+		    	vertexTextureCoords.add(vCoord);
 		    	
 		    	ceilingVertexCount++;
     		}
@@ -501,29 +431,29 @@ public class MainDemo extends AbstractGwtProcDemo {
 	    	{
 	    		continue;
 	    	}
-    		StringTokenizer tokenizer = new StringTokenizer(line);
-    		String token = tokenizer.nextToken();
-    		if( ! token.equals("//")) {
+	    	
+	    	String[] tokens = line.split("\\s");
+	    	System.out.println("tokens are : " + tokens);
+    		if( ! tokens[0].equals("//")) {
 		    	/*
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-
-    			float xCoord = Float.parseFloat(token);
-		    	String yCoord = tokenizer.nextToken();
-		    	String zCoord = tokenizer.nextToken();
-		    	String uCoord = tokenizer.nextToken();
-		    	String vCoord = tokenizer.nextToken();
-		    	
+    			float xCoord = Float.parseFloat(tokens[0]);
+    			float yCoord = Float.parseFloat(tokens[1]);
+    			float zCoord = Float.parseFloat(tokens[2]);
+    			float uCoord = Float.parseFloat(tokens[3]);
+    			float vCoord = Float.parseFloat(tokens[4]);
+    			
 		    	// Move 6 along x axis
-		    	System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
 		    	
 		    	vertexPositions.add(xCoord);
-		    	vertexPositions.add(Float.parseFloat(yCoord));
-		    	vertexPositions.add(Float.parseFloat(zCoord));
+		    	vertexPositions.add(yCoord);
+		    	vertexPositions.add(zCoord);
 		    	
-		    	vertexTextureCoords.add(Float.parseFloat(uCoord));
-		    	vertexTextureCoords.add(Float.parseFloat(vCoord));
+		    	vertexTextureCoords.add(uCoord);
+		    	vertexTextureCoords.add(vCoord);
 		    	
 		    	floorVertexCount++;
     		}
