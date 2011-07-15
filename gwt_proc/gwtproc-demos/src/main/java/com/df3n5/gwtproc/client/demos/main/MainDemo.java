@@ -706,7 +706,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		//Ceiling
 		//Vertex pos attrib
-		glContext.uniform1i(procTextureTypeUniform, 0);
+		glContext.uniform1i(procTextureTypeUniform, 3);
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, ceilingVertexPosBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		//Load the vertex texture data into buffer
@@ -716,9 +716,9 @@ public class MainDemo extends AbstractGwtProcDemo {
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, ceilingVertexCount);
 		glContext.flush();
 		
-		//floor
+		//Floor
 		//Vertex pos attrib
-		glContext.uniform1i(procTextureTypeUniform, 2);
+		glContext.uniform1i(procTextureTypeUniform, 4);
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, floorVertexPosBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		//Load the vertex texture data into buffer

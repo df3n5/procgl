@@ -359,9 +359,12 @@ float snoise(vec3 v)
 
 //TODO : Pass in as uniform
 //UNIFORMS
-float uFrequency = 2.0;
-vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
-vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+float uFrequencyCeiling = 1024.0;
+float uFrequencyFloor = 32.0;
+vec4 uColorCeiling0 = vec4(0.4,0.8,0.8,1.0);
+vec4 uColorCeiling1 = vec4(0.5,0.9,0.9,1.0);
+vec4 uColorFloor0 = vec4(0.1,0.1,0.1,1.0);
+vec4 uColorFloor1 = vec4(0.2,0.2,0.2,1.0);
 
 varying vec2 vTextureCoord;
 
@@ -374,9 +377,6 @@ float time = 0.1;
 
 //MAIN
 void main(void) {
-	vec2 texCoord = mod(floor(vTextureCoord * float(uFrequency*2.0)), 2.0);
-	float delta = abs(texCoord.x - texCoord.y);
-
 	vec3 uvw = v_texCoord3D + 0.1*vec3(snoise(v_texCoord3D + vec3(0.0, 0.0, time)),
 			snoise(v_texCoord3D + vec3(43.0, 17.0, time)),
 			snoise(v_texCoord3D + vec3(-17.0, -43.0, time)));
@@ -402,7 +402,7 @@ void main(void) {
 
 	if(uProcTextureType == 0)
 	{
-		gl_FragColor = vec4(vec3(-0.9, -0.9, -0.9) + vec3(n, n, n), 1.0); //Wall material
+		gl_FragColor = vec4(vec3(0.0, -0.9, -0.9) + vec3(n, n, n), 1.0); //Wall material
 	}
 	else if (uProcTextureType == 1)
 	{
@@ -412,6 +412,23 @@ void main(void) {
 	{
 		gl_FragColor = vec4(1.0,1.0,1.0,1.0);
 	}
+	else if (uProcTextureType == 3)
+	{
+		//Ceiling
+		vec2 texCoord = mod(floor(vTextureCoord * float(uFrequencyCeiling*2.0)), 2.0);
+		float delta = abs(texCoord.x - texCoord.y);
+	
+		gl_FragColor = mix(uColorCeiling1, uColorCeiling0, delta);
+	}
+	else if (uProcTextureType == 4)
+	{
+		//Floor
+		vec2 texCoord = mod(floor(vTextureCoord * float(uFrequencyFloor*2.0)), 2.0);
+		float delta = abs(texCoord.x - texCoord.y);
+	
+		gl_FragColor = mix(uColorFloor1, uColorFloor0, delta);
+	}
+	
 
 //	gl_FragColor = vec4(vec3(1.0, 0.5, 0.0) + vec3(n, n, n), 1.0);
 
