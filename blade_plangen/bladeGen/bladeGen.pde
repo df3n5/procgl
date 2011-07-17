@@ -107,7 +107,6 @@ class GameView extends GameEventListener {
   } 
 }
 
-
 class Triangle {
   float x1,y1,z1;
   float x2,y2,z2;
@@ -368,6 +367,45 @@ class GameLogic extends GameEventListener{
     }
   }
 
+/*
+  public void generateOffice00(int roomWidth, int roomHeight, int max) {
+	//Problem: Corner rooms have no hallway access
+    for(int i = 0 ; i < max ; i++) {
+      for(int j = 0 ; j < max ; j++) {
+        if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
+			|| ((j==1) && (i!=0) && (i!=max-1)) //Left side hallway
+			|| ((j==max-2) && (i!=0) && (i!=max-1)) //Right side hallway
+			){
+			continue;
+		}
+          createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+      }
+    }
+  }
+*/
+
+  public void generateOffice01(int roomWidth, int roomHeight, int max) {
+	  //Problem: Corner rooms have no hallway access
+	  for(int i = 0 ; i < max ; i++) {
+		  for(int j = 0 ; j < max ; j++) {
+			  if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
+					  || ((j==1) && (i!=0) && (i!=max-1)) //Left side hallway
+					  || ((j==max-2) && (i!=0) && (i!=max-1)) //Right side hallway
+					  || ((i==1 || i==max-1) && (j==0 || j==max-1)) //No 2nd one
+				){
+				  continue;
+			  }
+
+			  if((j==0 || j==max-1) && (i==0 || i==max-2)) {
+				  //Make room which is of twice the width
+				  createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight);
+			  } else {
+				  createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+			  }
+		  }
+	  }
+  }
+
   public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
     String resultStr = "";
     //Cycle through entities and output their vertices
@@ -397,7 +435,8 @@ class GameLogic extends GameEventListener{
   }
 
   public void init() {
-    generateGrid(7,7);
+//    generateGrid(7,7);
+    generateOffice01(3,4,7);
 
     String entityStr = getEntitiesAsStr(10,10,entities);
     System.out.println("Entities:\n---\n " + entityStr + "\n---");
