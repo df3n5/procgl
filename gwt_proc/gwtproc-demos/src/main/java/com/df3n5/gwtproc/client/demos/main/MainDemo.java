@@ -44,7 +44,7 @@ import com.googlecode.gwtgl.binding.WebGLUniformLocation;
  */
 public class MainDemo extends AbstractGwtProcDemo {
 
-	private static final boolean procOn = false;
+	private static final boolean procOn = true;
 	
 	private Mesh skyCube = CubeFactory.createNewInstance(100.0f);
 
@@ -79,6 +79,11 @@ public class MainDemo extends AbstractGwtProcDemo {
 	private WebGLBuffer ceilingVertexPosBuffer;
 	private WebGLBuffer ceilingVertexTextureCoordBuffer;
 	private int ceilingVertexCount;
+	
+	//Pillars
+	private WebGLBuffer pillarsVertexPosBuffer;
+	private WebGLBuffer pillarsVertexTextureCoordBuffer;
+	private int pillarsVertexCount;
 
 	private float translateZ = 0.5f;
 	private FloatMatrix perspectiveMatrix;
@@ -137,12 +142,14 @@ public class MainDemo extends AbstractGwtProcDemo {
 			initWorld();
 			initCeiling();
 			initFloor();
+			initPillars();
 		}
 		else
 		{
 			initWorldProc();
 			initCeilingProc();
 			initFloorProc();
+			initPillarsProc();
 		}
 
 		initShaders();
@@ -158,13 +165,13 @@ public class MainDemo extends AbstractGwtProcDemo {
 	
 	/**
 	 * TODO : Put this in util place
-	 * @param vec
+	 * @param vertexPositions
 	 * @return
 	 */
-	public float[] convertToFloatArray(Vector<Float> vec) {
-		float[] result = new float[vec.size()];
-		for(int i = 0 ; i < vec.size(); i++) {
-			result[i] = vec.elementAt(i).floatValue();
+	public float[] convertToFloatArray(Vector<Double> vertexPositions) {
+		float[] result = new float[vertexPositions.size()];
+		for(int i = 0 ; i < vertexPositions.size(); i++) {
+			result[i] = vertexPositions.elementAt(i).floatValue();
 		}
 		return result;
 	}
@@ -212,12 +219,118 @@ public class MainDemo extends AbstractGwtProcDemo {
 		*/
 	}
 	
+	public void initPillars() {
+		String mapData = Resources.INSTANCE.pillars().getText();
+	    String[] lines = mapData.split("\n");
+	    Vector<Double> vertexPositions = new Vector();
+	    Vector<Double> vertexTextureCoords = new Vector();
+	    
+	    pillarsVertexCount = 0;
+	    
+	    for (String line : lines) {
+	    	if(line.equals(""))
+	    	{
+	    		continue;
+	    	}
+	    	String[] tokens = line.split("\\s");
+    		if( ! tokens[0].equals("//")) {
+		    	/*
+		    	 * The format is:
+		    	 *  vP vP vP tC tC
+		    	 */
+    			double xCoord = Float.parseFloat(tokens[0]);
+    			double yCoord = Float.parseFloat(tokens[1]);
+    			double zCoord = Float.parseFloat(tokens[2]);
+    			double uCoord = Float.parseFloat(tokens[3]);
+    			double vCoord = Float.parseFloat(tokens[4]);
+    			
+		    	// Move 6 along x axis
+		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
+		    	
+		    	vertexPositions.add(xCoord);
+		    	vertexPositions.add(yCoord);
+		    	vertexPositions.add(zCoord);
+		    	
+		    	vertexTextureCoords.add(uCoord);
+		    	vertexTextureCoords.add(vCoord);
+		    	
+		    	pillarsVertexCount++;
+    		}
+	    }
+	    
+	    pillarsVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		pillarsVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
+
+	public void initPillarsProc() {
+	    Vector<Double> vertexPositions = new Vector<Double>();
+	    Vector<Double> vertexTextureCoords = new Vector<Double>();
+	    
+	    Pillar pillar = new Pillar(0,0, 0.3f);
+	    
+	    pillarsVertexCount = 0;
+	    
+	    ArrayList<Triangle> triangles = pillar.getTriangles(0,2,0,0);
+	    ArrayList<Point2> uvCoords = pillar.getUVCoords();
+	    int i = 0;
+	    for(Triangle tri : triangles) {
+	    	vertexPositions.add(tri.getX1());
+	    	vertexPositions.add(tri.getY1());
+	    	vertexPositions.add(tri.getZ1());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX2());
+	    	vertexPositions.add(tri.getY2());
+	    	vertexPositions.add(tri.getZ2());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	vertexPositions.add(tri.getX3());
+	    	vertexPositions.add(tri.getY3());
+	    	vertexPositions.add(tri.getZ3());
+
+	    	vertexTextureCoords.add(uvCoords.get(i).getX());
+	    	vertexTextureCoords.add(uvCoords.get(i++).getY());
+
+	    	pillarsVertexCount += 3;
+	    }
+	    
+	    pillarsVertexPosBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexPosBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexPositions)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		pillarsVertexTextureCoordBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexTextureCoordBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+				Float32Array.create(convertToFloatArray(vertexTextureCoords)), 
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		checkErrors();
+	}
+	
 	public void initWorld() {
 		String mapData = Resources.INSTANCE.map().getText();
 	    String[] lines = mapData.split("\n");
 	    int vertexCount = 0;
-	    Vector<Float> vertexPositions = new Vector();
-	    Vector<Float> vertexTextureCoords = new Vector();
+	    Vector<Double> vertexPositions = new Vector();
+	    Vector<Double> vertexTextureCoords = new Vector();
 	    
 	    wallsVertexCount = 0;
 	    
@@ -232,11 +345,11 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-    			float xCoord = Float.parseFloat(tokens[0]);
-    			float yCoord = Float.parseFloat(tokens[1]);
-    			float zCoord = Float.parseFloat(tokens[2]);
-    			float uCoord = Float.parseFloat(tokens[3]);
-    			float vCoord = Float.parseFloat(tokens[4]);
+    			double xCoord = Double.parseDouble(tokens[0]);
+    			double yCoord = Double.parseDouble(tokens[1]);
+    			double zCoord = Double.parseDouble(tokens[2]);
+    			double uCoord = Double.parseDouble(tokens[3]);
+    			double vCoord = Double.parseDouble(tokens[4]);
     			
 		    	// Move 6 along x axis
 		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
@@ -267,7 +380,6 @@ public class MainDemo extends AbstractGwtProcDemo {
 		checkErrors();
 	}
 	
-
 	public ArrayList<Room> generateGrid(int roomLength, int max) {
 		ArrayList<Room> resultGrid = new ArrayList<Room>();
 		for(int i = 0 ; i < max ; i++) {
@@ -281,8 +393,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	}
 	
 	public void initWorldProc() {
-	    Vector<Float> vertexPositions = new Vector<Float>();
-	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    Vector<Double> vertexPositions = new Vector<Double>();
+	    Vector<Double> vertexTextureCoords = new Vector<Double>();
 	    ArrayList<Room> rooms = generateGrid(7,7);
 	    
 	    wallsVertexCount = 0;
@@ -335,8 +447,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	public void initCeiling() {
 		String ceilingStr = Resources.INSTANCE.ceiling().getText();
 	    String[] lines = ceilingStr.split("\n");
-	    Vector<Float> vertexPositions = new Vector();
-	    Vector<Float> vertexTextureCoords = new Vector();
+	    Vector<Double> vertexPositions = new Vector();
+	    Vector<Double> vertexTextureCoords = new Vector();
 	    
 	    for (String line : lines) {
 	    	if(line.equals(""))
@@ -350,11 +462,11 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-    			float xCoord = Float.parseFloat(tokens[0]);
-    			float yCoord = Float.parseFloat(tokens[1]);
-    			float zCoord = Float.parseFloat(tokens[2]);
-    			float uCoord = Float.parseFloat(tokens[3]);
-    			float vCoord = Float.parseFloat(tokens[4]);
+    			double xCoord = Double.parseDouble(tokens[0]);
+    			double yCoord = Double.parseDouble(tokens[1]);
+    			double zCoord = Double.parseDouble(tokens[2]);
+    			double uCoord = Double.parseDouble(tokens[3]);
+    			double vCoord = Double.parseDouble(tokens[4]);
     			
 		    	// Move 6 along x axis
 		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
@@ -385,8 +497,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	}
 	
 	public void initCeilingProc() {
-	    Vector<Float> vertexPositions = new Vector<Float>();
-	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    Vector<Double> vertexPositions = new Vector<Double>();
+	    Vector<Double> vertexTextureCoords = new Vector<Double>();
 	    
 	    Plane ceiling = new Plane(0,0, 1000,1000, 2);
 	    
@@ -436,8 +548,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	public void initFloor() {
 		String floorStr = Resources.INSTANCE.floor().getText();
 	    String[] lines = floorStr.split("\n");
-	    Vector<Float> vertexPositions = new Vector();
-	    Vector<Float> vertexTextureCoords = new Vector();
+	    Vector<Double> vertexPositions = new Vector();
+	    Vector<Double> vertexTextureCoords = new Vector();
 	    
 	    for (String line : lines) {
 	    	if(line.equals(""))
@@ -451,11 +563,11 @@ public class MainDemo extends AbstractGwtProcDemo {
 		    	 * The format is:
 		    	 *  vP vP vP tC tC
 		    	 */
-    			float xCoord = Float.parseFloat(tokens[0]);
-    			float yCoord = Float.parseFloat(tokens[1]);
-    			float zCoord = Float.parseFloat(tokens[2]);
-    			float uCoord = Float.parseFloat(tokens[3]);
-    			float vCoord = Float.parseFloat(tokens[4]);
+    			double xCoord = Double.parseDouble(tokens[0]);
+    			double yCoord = Double.parseDouble(tokens[1]);
+    			double zCoord = Double.parseDouble(tokens[2]);
+    			double uCoord = Double.parseDouble(tokens[3]);
+    			double vCoord = Double.parseDouble(tokens[4]);
     			
 		    	// Move 6 along x axis
 		    	//System.out.println(Float.toString(xCoord + 6.0f) + "  " + yCoord + "  " + zCoord + " " + uCoord + " " + vCoord);
@@ -486,8 +598,8 @@ public class MainDemo extends AbstractGwtProcDemo {
 	}
 	
 	public void initFloorProc() {
-	    Vector<Float> vertexPositions = new Vector<Float>();
-	    Vector<Float> vertexTextureCoords = new Vector<Float>();
+	    Vector<Double> vertexPositions = new Vector<Double>();
+	    Vector<Double> vertexTextureCoords = new Vector<Double>();
 	    
 	    Plane floor = new Plane(0,0, 1000,1000, 0);
 	    
@@ -687,6 +799,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, wallsVertexPosBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
+		/*
 		//Draw walls you!
 		glContext.uniform1i(procTextureTypeUniform, 0);
 	    glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, wallsVertexCount);
@@ -703,7 +816,7 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, 36);
 		glContext.flush();
-		
+
 		//Ceiling
 		//Vertex pos attrib
 		glContext.uniform1i(procTextureTypeUniform, 3);
@@ -727,10 +840,21 @@ public class MainDemo extends AbstractGwtProcDemo {
 		
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, floorVertexCount);
 		glContext.flush();
+		*/
+	    //Pillars
+		//Vertex pos attrib
+		glContext.uniform1i(procTextureTypeUniform, 1);
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexPosBuffer);
+		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
+		//Load the vertex texture data into buffer
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, pillarsVertexTextureCoordBuffer);
+		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
+		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, pillarsVertexCount);
+		glContext.flush();
+		//
 		
-		//Floor
 		
 	    /*
 		// Load the vertex data

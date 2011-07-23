@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 abstract class Entity {
 	protected int type;
-	protected int x, y;
+	protected float x, y;
 
-	public Entity(int type, int x, int y) {
+	public Entity(int type, float x, float y) {
 		this.type = type;
 		this.x = x;
 		this.y = y;
@@ -14,22 +14,15 @@ abstract class Entity {
 
 	public static final int ROOM_TYPE = 0;
 	public static final int HALL_TYPE = 1;
+	public static final int PILLAR_TYPE = 2;
 
-	public int getType() {
-		return type;
-	}
+	public int getType() { return type; }
+	public float getX() { return x; }
+	public float getY() { return y; }
 
-	public int getX() {
-		return x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public abstract ArrayList<Triangle> getTriangles(float lowY, float highY,
-			int camx, int camy);
+	public abstract ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy);
 
 	public abstract ArrayList<Point2> getUVCoords();
 
 }
+

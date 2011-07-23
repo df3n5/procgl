@@ -73,7 +73,7 @@ class GameView extends GameEventListener {
   public void init() {
   }
 
-  void drawBlock(int x, int y) {
+  void drawBlock(float x, float y) {
     rect(x*blockSize, y*blockSize, blockSize, blockSize);
   }
 
@@ -154,9 +154,9 @@ class Point2 {
 
 abstract class Entity {
   protected int type;
-  protected int x, y;
+  protected float x, y;
 
-  public Entity(int type, int x, int y) {
+  public Entity(int type, float x, float y) {
     this.type = type;
     this.x = x;
     this.y = y;
@@ -164,10 +164,11 @@ abstract class Entity {
 
   public static final int ROOM_TYPE = 0;
   public static final int HALL_TYPE = 1;
+  public static final int PILLAR_TYPE = 2;
 
   public int getType() { return type; }
-  public int getX() { return x; }
-  public int getY() { return y; }
+  public float getX() { return x; }
+  public float getY() { return y; }
 
   public abstract ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy);
 
@@ -185,7 +186,7 @@ class Room extends Entity {
   public int getWt() { return wt; }
   public int getHt() { return ht; }
 
-  private ArrayList<Triangle> extrudeLineSegTo3D(int x1, int z1, int x2, int z2, float lowY, float highY) {
+  private ArrayList<Triangle> extrudeLineSegTo3D(float x1, float z1, float x2, float z2, float lowY, float highY) {
     //Two triangles : 
     // (x1,z1)   (x2,z2)
     // * ------- * highY
@@ -343,6 +344,87 @@ class Plane {
   }
 }
 
+
+class Pillar extends Entity {
+  private float radius;
+  private float numSlices;
+  private float totalAngle;
+
+  public Pillar(float x, float y, float radius) {
+    super(Entity.PILLAR_TYPE, x, y);
+    this.radius = radius;
+    this.numSlices = 20;
+    //totalAngle = 360.0f;
+    totalAngle = 360.0f;
+    //this.widthResolution = 10;
+  }
+
+  private ArrayList<Triangle> extrudeLineSegTo3D(float x1, float z1, float x2, float z2, float lowY, float highY) {
+    //Two triangles : 
+    // (x1,z1)   (x2,z2)
+    // * ------- * highY
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * lowY
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    res.add(new Triangle(x1,highY,z1, x1,lowY, z1, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x2, highY, z2, x2,lowY,z2));
+    return res; 
+  }
+
+  public float degreeToRad(float degree) {
+    float PI = 3.14159265;
+    return ( (degree) * (PI / 180.0) );
+  }
+
+  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    float angle = (totalAngle/numSlices);
+    for (int i=0; i < numSlices ; i++) {
+
+      float x1 = x + (cos(degreeToRad( angle * i )) * radius);
+      float y1 = y + (sin(degreeToRad( angle * i )) * radius);
+
+      if((i+1) <= numSlices) { //Defensive coding, shouldn't happen.
+        float x2 = x + (cos(degreeToRad( angle * (i+1) )) * radius);
+        float y2 = y + (sin(degreeToRad( angle * (i+1) )) * radius);
+
+        System.out.println("angle*i is :  " + (angle*i));
+        System.out.println("x1 " + x1 + " y1 : " + y1 + " x2: " + x2 + " y2 " + y2);
+
+        res.addAll(extrudeLineSegTo3D(x1,y1, x2, y2, lowY, highY));
+      }
+    }
+
+    return res;
+  }
+
+  public ArrayList<Point2> getUVCoords() {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+
+    float amount = 6.0;
+    for (int i=0; i < numSlices; i++) {
+      // TODO:Verify this is correct.
+      res.add(new Point2(0,amount));
+      res.add(new Point2(0,0));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(amount,amount));
+      res.add(new Point2(amount,0));
+    }
+
+    return res;
+  }
+}
+
 class GameLogic extends GameEventListener{
   protected ArrayList<Entity> entities;
 
@@ -446,6 +528,13 @@ class GameLogic extends GameEventListener{
 
     Plane floor = new Plane(0,0, 1000,1000, 0);
     System.out.println("Floor:\n---\n" + floor.toString() + "\n---");
+
+    ArrayList<Entity> pillars = new ArrayList<Entity>();
+//    Pillar pillar = new Pillar(10.0,10.0, 1.0);
+    Pillar pillar = new Pillar(0.0,0.0, 0.5);
+    pillars.add(pillar);
+    //System.out.println("Pillar:\n---\n" + pillar.toString() + "\n---");
+    System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");
   }
 
   public void update() {

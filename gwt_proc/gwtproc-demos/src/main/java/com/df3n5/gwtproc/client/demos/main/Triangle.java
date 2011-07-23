@@ -1,36 +1,36 @@
 package com.df3n5.gwtproc.client.demos.main;
 
 public class Triangle {
-	  float x1,y1,z1;
-	  float x2,y2,z2;
-	  float x3,y3,z3;
+	  double x1,y1,z1;
+	  double x2,y2,z2;
+	  double x3,y3,z3;
 
-	  public Triangle(float x1, float y1, float z1,
-	      float x2, float y2, float z2,
-	      float x3, float y3, float z3
+	  public Triangle(double x12, double y1, double y12,
+	      double x13, double y2, double y13,
+	      double x22, double y3, double y22
 	      ) {
-	    this.x1 = x1;
+	    this.x1 = x12;
 	    this.y1 = y1;
-	    this.z1 = z1;
+	    this.z1 = y12;
 
-	    this.x2 = x2;
+	    this.x2 = x13;
 	    this.y2 = y2;
-	    this.z2 = z2;
+	    this.z2 = y13;
 
-	    this.x3 = x3;
+	    this.x3 = x22;
 	    this.y3 = y3;
-	    this.z3 = z3;
+	    this.z3 = y22;
 	  }
 
-	  float getX1() { return x1; }
-	  float getY1() { return y1; }
-	  float getZ1() { return z1; }
+	  double getX1() { return x1; }
+	  double getY1() { return y1; }
+	  double getZ1() { return z1; }
 
-	  float getX2() { return x2; }
-	  float getY2() { return y2; }
-	  float getZ2() { return z2; }
+	  double getX2() { return x2; }
+	  double getY2() { return y2; }
+	  double getZ2() { return z2; }
 
-	  float getX3() { return x3; }
-	  float getY3() { return y3; }
-	  float getZ3() { return z3; }
+	  double getX3() { return x3; }
+	  double getY3() { return y3; }
+	  double getZ3() { return z3; }
 }

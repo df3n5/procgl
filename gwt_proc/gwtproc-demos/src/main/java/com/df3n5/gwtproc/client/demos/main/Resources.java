@@ -53,6 +53,9 @@ public interface Resources extends ClientBundle {
 	
 	@Source(value = { "floor.txt" })
 	TextResource floor();
+	
+	@Source(value = { "pillars.txt" })
+	TextResource pillars();
 
 	/**
 	 * Front skybox texture

@@ -19,8 +19,8 @@ class Room extends Entity {
 		return ht;
 	}
 
-	private ArrayList<Triangle> extrudeLineSegTo3D(int x1, int z1, int x2,
-			int z2, float lowY, float highY) {
+	private ArrayList<Triangle> extrudeLineSegTo3D(float x1, float z1,
+			float x2, float z2, float lowY, float highY) {
 		// Two triangles :
 		// (x1,z1) (x2,z2)
 		// * ------- * highY

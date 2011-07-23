@@ -1,11 +1,11 @@
 package com.df3n5.gwtproc.client.demos.main;
 
 public class Point2 {
-	float x, y;
-	Point2(float x, float y) {
+	double x, y;
+	Point2(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
-	public float getX() { return x; }
-	public float getY() { return y; }
+	public double getX() { return x; }
+	public double getY() { return y; }
 }

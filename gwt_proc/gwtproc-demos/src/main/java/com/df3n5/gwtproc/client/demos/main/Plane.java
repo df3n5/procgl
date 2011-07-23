@@ -40,7 +40,7 @@ public class Plane {
 	  public ArrayList<Point2> getUVCoords()
 	  {
 	    ArrayList<Point2> res = new ArrayList<Point2>();
-	    float amount = 6.0f;
+	    double amount = 6.0;
 	    res.add(new Point2(0,amount));
 	    res.add(new Point2(0,0));
 	    res.add(new Point2(amount,0));
@@ -58,21 +58,21 @@ public class Plane {
 	    ArrayList<Point2> uvCoords = getUVCoords();
 	    int i = 0;
 	    for(Triangle tri : triangles) {
-	      resultStr += Float.toString(tri.getX1()) + "  " +
-	        Float.toString(tri.getY1()) + "  " +
-	        Float.toString(tri.getZ1()) + " " +
-	        Float.toString(uvCoords.get(i).getX()) + " " +
-	        Float.toString(uvCoords.get(i++).getY()) + "\n" +
-	        Float.toString(tri.getX2()) + "  " +
-	        Float.toString(tri.getY2()) + "  " +
-	        Float.toString(tri.getZ2()) + "  " +
-	        Float.toString(uvCoords.get(i).getX()) + " " + 
-	        Float.toString(uvCoords.get(i++).getY()) + "\n" +
-	        Float.toString(tri.getX3()) + "  " +
-	        Float.toString(tri.getY3()) + "  " +
-	        Float.toString(tri.getZ3()) + " " +
-	        Float.toString(uvCoords.get(i).getX()) + " " +
-	        Float.toString(uvCoords.get(i++).getY()) + "\n";
+	      resultStr += Double.toString(tri.getX1()) + "  " +
+	        Double.toString(tri.getY1()) + "  " +
+	        Double.toString(tri.getZ1()) + " " +
+	        Double.toString(uvCoords.get(i).getX()) + " " +
+	        Double.toString(uvCoords.get(i++).getY()) + "\n" +
+	        Double.toString(tri.getX2()) + "  " +
+	        Double.toString(tri.getY2()) + "  " +
+	        Double.toString(tri.getZ2()) + "  " +
+	        Double.toString(uvCoords.get(i).getX()) + " " + 
+	        Double.toString(uvCoords.get(i++).getY()) + "\n" +
+	        Double.toString(tri.getX3()) + "  " +
+	        Double.toString(tri.getY3()) + "  " +
+	        Double.toString(tri.getZ3()) + " " +
+	        Double.toString(uvCoords.get(i).getX()) + " " +
+	        Double.toString(uvCoords.get(i++).getY()) + "\n";
 	    }
 	    return resultStr;
 	  }
