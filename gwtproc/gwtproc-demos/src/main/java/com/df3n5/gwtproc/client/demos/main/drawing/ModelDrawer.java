@@ -26,6 +26,8 @@ public class ModelDrawer {
 	private WebGLUniformLocation procTextureTypeUniform;
 	private WebGLUniformLocation mvUniform;
 	private WebGLUniformLocation projectionUniform;
+	private WebGLUniformLocation lightingUniform;
+	private WebGLUniformLocation ambientColorUniform;
 	
 	private FloatMatrix perspectiveMatrix;
 	private FloatMatrix translationMatrix;
@@ -169,6 +171,26 @@ public class ModelDrawer {
 		
 		textureCoordAttribute = glContext.getAttribLocation(shaderProgram, "aTextureCoord");
 	    glContext.enableVertexAttribArray(textureCoordAttribute);
+
+		//Lighting stuff.
+		int lighting = 0;
+		lightingUniform = glContext.getUniformLocation(shaderProgram, "uLighting");
+		glContext.uniform1i(lightingUniform, lighting);
+		if (lighting != 0) {
+			
+			float ambientR = 0.1f;
+			float ambientG = 0.1f;
+			float ambientB = 0.1f;
+			
+			ambientColorUniform = glContext.getUniformLocation(shaderProgram, "uAmbientColor");
+			
+			glContext.uniform3f(
+					ambientColorUniform,
+					ambientR,
+					ambientG,
+					ambientB
+					);
+		}
 	}
 	
 	public void update() {

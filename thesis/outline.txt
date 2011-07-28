@@ -1,0 +1,33 @@
+Intro:
+WebGL and procedural gen.
+HTML5, etc.
+
+State-of-the-art (Mostly done from lit review):
+WebGL, kkrieger, etc.
+
+Design:
+Talk about how we seperate proc and non-proc.
+Pipeline for generation of content.
+What the influences were (architecture papers, Quake, etc.)?
+Main design goals:
+ - Fast loading times
+ - nice-looking scenes
+ - Scenes which might resemble a game
+How were design goals addressed?
+
+
+Implementation:
+Details of the project, the codebase.
+UML of project.
+Problems such as the framework, WebGL current limitations.
+Talk about perlin noise generation and how this is done in the frag shader.
+
+Evaluation:
+Performance test results.
+How easy it is to create a variety of scenes.
+Ease of use.
+How do scenes resemble a game?
+How do scenes resemble a real environment?
+
+Conclusions and Further Work:
+Stuff I wanted to do like bump mapping, progressive meshes, 

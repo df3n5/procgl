@@ -176,17 +176,41 @@ abstract class Entity {
 
 }
 
+class Window{
+  private int wallN;
+  private Point2 startPoint;
+  private Point2 windowSpan;
+
+  public Window(int wallN, 
+      Point2 startPoint, 
+      Point2 windowSpan) {
+    this.wallN = wallN;
+    this.startPoint = startPoint;
+    this.windowSpan = windowSpan;
+  }
+  
+  public int getWallN() { return wallN; }
+  public Point2 getStartPoint() { return startPoint; }
+  public Point2 getWindowSpan() { return windowSpan; }
+
+}
+
 class Room extends Entity {
   private int wt, ht; //Width and height
+  private ArrayList<Window> windows; // = new int[0];
+
   public Room(int x, int y, int wt, int ht) {
     super(Entity.ROOM_TYPE, x, y);
     this.wt = wt;
     this.ht = ht;
+    windows = new ArrayList<Window>();
   }
   public int getWt() { return wt; }
   public int getHt() { return ht; }
 
-  private ArrayList<Triangle> extrudeLineSegTo3D(float x1, float z1, float x2, float z2, float lowY, float highY) {
+  private ArrayList<Triangle> extrudeLineSegTo3D(
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY) {
     //Two triangles : 
     // (x1,z1)   (x2,z2)
     // * ------- * highY
@@ -202,20 +226,157 @@ class Room extends Entity {
 //    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
 //    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
 
-    res.add(new Triangle(x1,highY,z1, x1,lowY, z1, x2,lowY,z2));
-    res.add(new Triangle(x1,highY,z1, x2, highY, z2, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x1,lowY,z1, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x2,highY,z2, x2,lowY,z2));
     return res; 
   }
 
+  public ArrayList<Triangle> extrudeWallFlat(int wallN, 
+      float lowY, float highY) {
+    switch(wallN) {
+      case 0:
+        return extrudeLineSegTo3D(x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3D(x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3D(x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3D(x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Triangle> getTrianglesFromSquare(float x1, float y1,float z1,
+      float x2, float y2, float z2) {
+    //Two triangles : 
+    // (x1,y1,z1)   
+    // * ------- *
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * (x2,y2,z2)
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    res.add(new Triangle(x1,y1,z1, x1,y2, z1, x2,y2,z2));
+    res.add(new Triangle(x1,y1,z1, x2, y1, z2, x2,y2,z2));
+    return res;
+  }
+
+  public ArrayList<Triangle> extrudeLineSegTo3DWithWindow(
+      Window window, 
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY
+      ) {
+    //Two triangles : 
+    // (x1,z1)                       (x2,z2)
+    // * ---------------------------- * highY
+    // |  |   |                       |
+    // |  |   |  (sx+spanx,sy+spany)  |
+    // |  *---*                       |
+    // |  |EEE|                       |
+    // |  *---*                       |
+    // |(sx,sy)                       |
+    // |  |   |                       |
+    // * ---------------------------- * lowY
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
+//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
+//
+    float angle = atan2((z2-z1), (x2-x1));
+
+    float relWindowX = (x1+(window.getStartPoint().getX()*cos(angle)));
+    float relWindowZ = (z1+(window.getStartPoint().getX()*sin(angle)));
+
+    float relWindowXPlusSpanX = (relWindowX+(window.getWindowSpan().getX()*cos(angle)));
+    float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
+
+    float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
+    float windowYBottom = lowY + window.getWindowSpan().getY();
+
+    res.addAll(getTrianglesFromSquare(x1,highY,z1, 
+          relWindowX,lowY,relWindowZ)); //Leftmost
+
+    res.addAll(getTrianglesFromSquare(relWindowX,highY,relWindowZ, 
+          relWindowXPlusSpanX, windowYTop, relWindowZPlusSpanZ)); //Above window
+
+    res.addAll(getTrianglesFromSquare(relWindowX,windowYBottom,relWindowZ, 
+          relWindowXPlusSpanX, lowY, relWindowZPlusSpanZ)); //Below window
+
+    res.addAll(getTrianglesFromSquare(relWindowXPlusSpanX, highY, relWindowZPlusSpanZ,
+          x2,lowY,z2)); //Rightmost
+    return res; 
+  }
+
+  public ArrayList<Triangle> extrudeWallWithWindowsOrDoors(
+      Window window, float lowY, float highY) {
+   
+    print("FUCK");
+    switch(window.getWallN()) {
+      case 0:
+        return extrudeLineSegTo3DWithWindow(window, x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DWithWindow(window, x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3DWithWindow(window, x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3DWithWindow(window, x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Triangle> getTrianglesForWall(int wallN, float lowY, float highY) {
+    boolean extruded = false;
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+   
+    for(int i=0 ; i < windows.size() ; i++) {
+      if(wallN == windows.get(i).getWallN()) {
+        res.addAll(extrudeWallWithWindowsOrDoors(windows.get(i), lowY, highY));
+        extruded = true;
+      }
+    }
+    /*
+    for(int i=0 ; i < doors.length() ; i++) {
+      if(wallN == doors[i]) {
+        extrudeWallWithDoor(i);
+        extruded = true;
+      }
+    }
+    */
+
+    if(! extruded) {
+      res.addAll(extrudeWallFlat(wallN, lowY, highY));
+    }
+
+    return res;
+  }
+
+  public void addWindow(int wallN, Point2 startPoint, Point2 span) {
+    windows.add(new Window(wallN, startPoint, span));
+  }
+
   public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
+    /*
     ArrayList<Triangle> res = new ArrayList<Triangle>();
 
     //TODO:Offset room coords by camera pos
-    res.addAll(extrudeLineSegTo3D(x,y, x+wt,y, lowY, highY));
-    res.addAll(extrudeLineSegTo3D(x,y, x,y+ht, lowY, highY));
-    res.addAll(extrudeLineSegTo3D(x+wt,y, x+wt,y+ht, lowY, highY));
-    res.addAll(extrudeLineSegTo3D(x,y+ht, x+wt,y+ht, lowY, highY));
+    res.addAll(extrudeLineSegTo3D(x,y, x+wt,y, lowY, highY)); //Side 0
+    res.addAll(extrudeLineSegTo3D(x,y, x,y+ht, lowY, highY)); //Side 1
+    res.addAll(extrudeLineSegTo3D(x+wt,y, x+wt,y+ht, lowY, highY)); //Side 2
+    res.addAll(extrudeLineSegTo3D(x,y+ht, x+wt,y+ht, lowY, highY)); //Side 3
 
+    return res;
+    */
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+    res.addAll(getTrianglesForWall(0, lowY, highY));
+    res.addAll(getTrianglesForWall(1, lowY, highY));
+    res.addAll(getTrianglesForWall(2, lowY, highY));
+    res.addAll(getTrianglesForWall(3, lowY, highY));
     return res;
   }
 
@@ -254,6 +415,33 @@ class Room extends Entity {
     res.add(new Point2(0,amount));
     res.add(new Point2(amount,amount));
     res.add(new Point2(amount,0));
+
+    //TODO:Remove the hack!
+    for(int i = 0 ; i < windows.size() ; i++){
+      res.add(new Point2(0,amount));
+      res.add(new Point2(0,0));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(amount,amount));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(0,0));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(amount,amount));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(0,0));
+      res.add(new Point2(amount,0));
+
+      res.add(new Point2(0,amount));
+      res.add(new Point2(amount,amount));
+      res.add(new Point2(amount,0));
+    }
 
     return res;
   }
@@ -435,6 +623,8 @@ class GameLogic extends GameEventListener{
   //Factory method
   public void createRoom(int x, int y, int w, int h) {
     Room room = new Room(x,y,w,h);
+    room.addWindow(0, new Point2(0.3, 0.6), new Point2(0.5,0.5) );
+    //room.addDoor(0, 3, 6);
     entities.add(room);
     GameEventManager.getInstance().addEvent(new AddEntityEvent(room));
   }

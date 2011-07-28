@@ -19,7 +19,6 @@ import com.df3n5.gwtproc.client.util.math.FloatMatrix;
 import com.df3n5.gwtproc.client.util.math.MatrixUtil;
 import com.df3n5.gwtproc.client.util.mesh.CubeFactory;
 import com.df3n5.gwtproc.client.util.mesh.Mesh;
-//import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.LoadEvent;
 import com.google.gwt.event.dom.client.LoadHandler;
