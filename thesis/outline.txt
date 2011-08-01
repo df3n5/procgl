@@ -1,33 +1,76 @@
 Intro:
-WebGL and procedural gen.
-HTML5, etc.
+  - Motivation: 
+    >> Growing popularity of WebGL and HTML5
+    >> Potential use for games
+	>> Difficult to use large assets
+	>> Procedural gen. has come along way
+	>> .kkrieger shows how assets can be encoded in a procedural manner, giving results similar to large assets
 
 State-of-the-art (Mostly done from lit review):
-WebGL, kkrieger, etc.
+  - WebGL
+	>> Based on OpenGL ES 2.0
+	>> Advantages
+		-> Easy delivery of applications (No need for explicit download)
+	>> Disadvantages
+		-> Limited feature set compared to desktop OpenGL.
+  - GwtGL
+  - Processing
+  - Procedural Content Generation (PCG)
+	>> Demoscene
+	>> .kkrieger
+	>> Perlin Noise
+	>> CityEngine
 
 Design:
-Talk about how we seperate proc and non-proc.
-Pipeline for generation of content.
-What the influences were (architecture papers, Quake, etc.)?
-Main design goals:
- - Fast loading times
- - nice-looking scenes
- - Scenes which might resemble a game
-How were design goals addressed?
+ - Main design goals:	
+	>> Fast loading times
+	>> Nice-looking scenes
+	>> Scenes which might resemble a game
+	>> Ability to assess performance relative to a non-procedural version
+	>> Easy to edit design program 
+ - How were design goals addressed?
+	>> Seperate of procedural and non-procedural versions.
+	>> Pipeline for generation of content.
+	>> Created texture generators from scratch
+	>> Perlin Nose done in frag shader (V.low latency)
+	>> Design program written in processing which makes the results quick to see and is also easy to edit
 
+ - What the influences were ?
+	>> Architecture
+		-> Christopher Alexander's "A Pattern Language"
+		-> Plan generation relies on this heavily
+	>> CityEngine
+	>> Quake
+		-> GL Quake
+		-> Quake under gwt
 
 Implementation:
-Details of the project, the codebase.
-UML of project.
-Problems such as the framework, WebGL current limitations.
-Talk about perlin noise generation and how this is done in the frag shader.
+ - Details of the the codebase.
+	>> UML
+	>> Seperation of procedural and non-procedural
+	>> Processing application vs GwtGL demo
+ - Plan generation
+ - Extrusion
+ - Perlin Noise
+ - Bump mapping
+ - Lighting
+ - Problems:
+	>> WebGL current limitations.
+		-> No noise() function
+		-> OpenGL ES 2.0 extensions are generally not supported yet.
+	>> Time constraints
+		-> No time to implement all of the plan generation
+		-> No progressive meshes
 
 Evaluation:
-Performance test results.
-How easy it is to create a variety of scenes.
-Ease of use.
-How do scenes resemble a game?
-How do scenes resemble a real environment?
+ - Performance test results.
+	>> Procedural vs non-procedural
+ - How easy it is to create a variety of scenes.
+ - Ease of use.
+ - How do scenes resemble a game?
+ - How do scenes resemble a real environment?
 
 Conclusions and Further Work:
-Stuff I wanted to do like bump mapping, progressive meshes, 
+ - Progressive meshes
+ - Plan generation
+ - Artist authoring

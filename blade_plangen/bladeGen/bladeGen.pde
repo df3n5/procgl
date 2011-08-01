@@ -315,7 +315,6 @@ class Room extends Entity {
   public ArrayList<Triangle> extrudeWallWithWindowsOrDoors(
       Window window, float lowY, float highY) {
    
-    print("FUCK");
     switch(window.getWallN()) {
       case 0:
         return extrudeLineSegTo3DWithWindow(window, x,y, x+wt,y, lowY, highY);
@@ -710,8 +709,12 @@ class GameLogic extends GameEventListener{
 //    generateGrid(7,7);
     generateOffice01(3,4,7);
 
+    PrintWriter output = createWriter("walls.txt"); 
     String entityStr = getEntitiesAsStr(10,10,entities);
-    System.out.println("Entities:\n---\n " + entityStr + "\n---");
+//    System.out.println("Entities:\n---\n " + entityStr + "\n---");
+    output.println(entityStr);
+    output.flush(); // Writes the remaining data to the file
+    output.close(); // Finishes the file
 
     Plane ceiling = new Plane(0,0, 1000,1000, 2);
     System.out.println("Ceiling:\n---\n" + ceiling.toString() + "\n---");
@@ -771,6 +774,7 @@ class App {
 App app;
 
 void setup() {
+
   app = new App();
   app.init();
 }
