@@ -44,15 +44,15 @@ public class Camera implements MouseMoveHandler,
 		zPos = 0.0f;
 	}
 	
-	public float getXPos() {
+	public float getX() {
 		return (float)xPos;
 	}
 	
-	public float getYPos() {
+	public float getY() {
 		return (float)yPos;
 	}
 	
-	public float getZPos() {
+	public float getZ() {
 		return (float)zPos;
 	}
 

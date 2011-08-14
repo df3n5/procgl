@@ -24,7 +24,6 @@ float SpecularFactor = 0.5;
 
 uniform int uProcTextureType;
 
-
 void main()
 {
     vec3 litColor;
@@ -46,8 +45,11 @@ void main()
     vec3 reflectDir = reflect(vLightDir, normDelta);
     
     float spec = max(dot(vEyeDir, reflectDir), 0.0);
+
     spec *= SpecularFactor;
+
     litColor = min(litColor + spec, vec3(1.0));
+
 
     gl_FragColor = vec4(litColor, 1.0);
     

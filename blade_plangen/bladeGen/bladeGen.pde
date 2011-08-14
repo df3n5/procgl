@@ -107,6 +107,40 @@ class GameView extends GameEventListener {
   } 
 }
 
+class Vector3 {
+  protected float x,y,z;
+
+  public Vector3() {
+    x = 0.0f;
+    y = 0.0f;
+    z = 0.0f;
+  }
+
+  public Vector3(float x, float y, float z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  public float getX() { return x; }
+  public float getY() { return y; }
+  public float getZ() { return z; }
+
+  public Vector3 crossProduct(Vector3 other) { 
+    float x = (this.y * other.getZ()) - (this.z * other.getY());
+    float y = (this.z * other.getX()) - (this.x * other.getZ());
+    float z = (this.x * other.getY()) - (this.y * other.getX());
+    return new Vector3(x,y,z);
+  }
+
+  public Vector3 subtract(Vector3 other) { 
+    float x = this.x - other.getX();
+    float y = this.y - other.getY();
+    float z = this.z - other.getZ();
+    return new Vector3(x,y,z);
+  }
+}
+
 class Triangle {
   float x1,y1,z1;
   float x2,y2,z2;
@@ -150,11 +184,19 @@ class Point2 {
   }
   public float getX() { return x; }
   public float getY() { return y; }
+
+  public float dist(Point2 other) {
+    return (float)Math.sqrt((other.getX()-x) * (other.getX()-x) + 
+        (other.getY()-y) * (other.getY()-y));
+  }
 }
 
 abstract class Entity {
   protected int type;
   protected float x, y;
+  protected ArrayList<Triangle> triangles;
+  protected ArrayList<Point2> texCoords;
+  protected ArrayList<Vector3> normals;
 
   public Entity(int type, float x, float y) {
     this.type = type;
@@ -170,10 +212,243 @@ abstract class Entity {
   public float getX() { return x; }
   public float getY() { return y; }
 
+  /*
   public abstract ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy);
 
   public abstract ArrayList<Point2> getUVCoords();
+  */
 
+  protected abstract void generateTriangles();
+
+  protected abstract void generateNormals();
+
+  protected abstract void generateTexCoords();
+
+  //Only to be called by "toString()"
+  protected void generateGeom() {
+    generateTriangles();
+    generateNormals();
+    generateTexCoords();
+  }
+
+  //Only to be called by "toString()"
+  protected String geomAsString() {
+    String resultStr = "";
+    int texCoordI = 0;
+    int normalI = 0;
+    for(Triangle tri : triangles) {
+      resultStr += Float.toString(tri.getX1()) + " " +
+        Float.toString(tri.getY1()) + " " +
+        Float.toString(tri.getZ1()) + " " +
+        Float.toString(normals.get(normalI).getX()) + " " +
+        Float.toString(normals.get(normalI).getY()) + " " +
+        Float.toString(normals.get(normalI++).getZ()) + " " +
+        Float.toString(texCoords.get(texCoordI).getX()) + " " +
+        Float.toString(texCoords.get(texCoordI++).getY()) + "\n" +
+        Float.toString(tri.getX2()) + " " +
+        Float.toString(tri.getY2()) + " " +
+        Float.toString(tri.getZ2()) + " " +
+        Float.toString(normals.get(normalI).getX()) + " " +
+        Float.toString(normals.get(normalI).getY()) + " " +
+        Float.toString(normals.get(normalI++).getZ()) + " " +
+        Float.toString(texCoords.get(texCoordI).getX()) + " " + 
+        Float.toString(texCoords.get(texCoordI++).getY()) + "\n" +
+        Float.toString(tri.getX3()) + " " +
+        Float.toString(tri.getY3()) + " " +
+        Float.toString(tri.getZ3()) + " " +
+        Float.toString(normals.get(normalI).getX()) + " " +
+        Float.toString(normals.get(normalI).getY()) + " " +
+        Float.toString(normals.get(normalI++).getZ()) + " " +
+        Float.toString(texCoords.get(texCoordI).getX()) + " " +
+        Float.toString(texCoords.get(texCoordI++).getY()) + "\n";
+    }
+    return resultStr;
+  }    
+
+  public String toString() {
+    generateGeom();
+    return geomAsString();
+  }
+
+  protected ArrayList<Triangle> extrudeLineSegTo3D(
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY) {
+    //Two triangles : 
+    // (x1,z1)   (x2,z2)
+    // * ------- * highY
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * lowY
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+    //    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
+    //    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
+
+    res.add(new Triangle(x1,highY,z1, x1,lowY,z1, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x2,highY,z2, x2,lowY,z2));
+    return res; 
+  }
+
+  public ArrayList<Triangle> getTrianglesFromSquare(float x1, float y1,float z1,
+      float x2, float y2, float z2) {
+    //Two triangles : 
+    // (x1,y1,z1)   
+    // * ------- *
+    // | \       |
+    // |  \      |
+    // |   \     | Anticlockwise triangle vertex decl.
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * (x2,y2,z2)
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    res.add(new Triangle(x1,y1,z1, x1,y2, z1, x2,y2,z2));
+    res.add(new Triangle(x1,y1,z1, x2, y1, z2, x2,y2,z2));
+    return res;
+  }
+
+  public ArrayList<Vector3> getNormalsFromSquare(float x1, float y1,float z1,
+      float x2, float y2, float z2) {
+    //Two triangles : 
+    // (x1,y1,z1)   
+    // *k-----<- * (x2,y1,z2)
+    // | \       |
+    // |  \     \/
+    // |   \     |
+    // |    \    |
+    // ^a    \   |
+    // |      \  |
+    // |   b   \ |
+    // *l-->----m* (x2,y2,z2)
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+
+    Vector3 k = new Vector3(x1, y1, z1);
+    Vector3 l = new Vector3(x1, y2, z1);
+    Vector3 m = new Vector3(x2, y2, z2);
+
+    Vector3 a = k.subtract(l);
+    Vector3 b = m.subtract(l);
+
+    Vector3 normal = a.crossProduct(b);
+
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+
+    return res;
+  }
+  protected ArrayList<Vector3> extrudeLineSegTo3DNormals(
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY) {
+    //Two triangles : 
+    // (x1,z1)   (x2,z2)
+    // * ------- * highY
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * lowY
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+
+    res.addAll(getNormalsFromSquare(x1, highY, z1, x2, lowY, z2));
+    return res; 
+  }
+
+  public ArrayList<Point2> getTexCoordsFromSquare(float x1, float y1,
+      float x2, float y2) {
+    //Two triangles : 
+    // (x1,y1)   
+    // *---------* (x2,y1)
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // *---------* (x2,y2)
+    ArrayList<Point2> res = new ArrayList<Point2>();
+
+    res.add(new Point2(x1,y1));
+    res.add(new Point2(x1,y2));
+    res.add(new Point2(x2,y2));
+
+    res.add(new Point2(x1,y1));
+    res.add(new Point2(x2,y1));
+    res.add(new Point2(x2,y2));
+
+    return res;
+  }
+
+  //For plain wall (no windows)
+  protected ArrayList<Point2> extrudeLineSegTo3DTexCoords(
+      float x1, float z1,
+      float x2, float z2,
+      float lowY, float highY) {
+    //Two triangles : 
+    // (0.0, highY, 0.0)    (wt,highY)
+    // * ------- * highY
+    // | \       |
+    // |  \      |
+    // |   \     |
+    // |    \    |
+    // |     \   |
+    // |      \  |
+    // |       \ |
+    // * ------- * lowY
+    ArrayList<Point2> res = new ArrayList<Point2>();
+
+    //Width is the length of the wall, which is distance between points in 2d
+    float wt = (float)Math.sqrt( ((x2-x1)*(x2-x1)) + ((z2-z1)*(z2-z1)));
+
+    res.addAll(getTexCoordsFromSquare(0.0, highY, wt, lowY));
+    return res; 
+  }
+
+  protected Vector3 generateNormalFromTri(Triangle tri) {
+    // *k
+    // | \ 
+    // |  \   
+    // |   \
+    // |    \ 
+    // ^a    \ 
+    // |      \ 
+    // |   b   \ 
+    // *l-->----m*
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+
+    Vector3 k = new Vector3(tri.getX1(), tri.getY1(), tri.getZ1());
+    Vector3 l = new Vector3(tri.getX2(), tri.getY2(), tri.getZ2());
+    Vector3 m = new Vector3(tri.getX3(), tri.getY3(), tri.getZ3());
+
+    Vector3 a = k.subtract(l);
+    Vector3 b = m.subtract(l);
+
+    return a.crossProduct(b);
+  }
+
+  protected ArrayList<Vector3> generateNormalsFromTriangles() {
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+    for(Triangle tri : triangles) {
+      Vector3 normal = generateNormalFromTri(tri);
+      res.add(normal);
+      res.add(normal);
+      res.add(normal);
+    }
+    return res;
+  }
 }
 
 class Window{
@@ -197,41 +472,21 @@ class Window{
 
 class Room extends Entity {
   private int wt, ht; //Width and height
+  private float lowY, highY; //Y for floor and ceiling
   private ArrayList<Window> windows; // = new int[0];
 
-  public Room(int x, int y, int wt, int ht) {
+  public Room(int x, int y, int wt, int ht, float lowY, float highY) {
     super(Entity.ROOM_TYPE, x, y);
     this.wt = wt;
     this.ht = ht;
+    this.lowY = lowY;
+    this.highY = highY;
     windows = new ArrayList<Window>();
   }
   public int getWt() { return wt; }
   public int getHt() { return ht; }
 
-  private ArrayList<Triangle> extrudeLineSegTo3D(
-      float x1, float z1, float x2, 
-      float z2, float lowY, float highY) {
-    //Two triangles : 
-    // (x1,z1)   (x2,z2)
-    // * ------- * highY
-    // | \       |
-    // |  \      |
-    // |   \     |
-    // |    \    |
-    // |     \   |
-    // |      \  |
-    // |       \ |
-    // * ------- * lowY
-    ArrayList<Triangle> res = new ArrayList<Triangle>();
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
-
-    res.add(new Triangle(x1,highY,z1, x1,lowY,z1, x2,lowY,z2));
-    res.add(new Triangle(x1,highY,z1, x2,highY,z2, x2,lowY,z2));
-    return res; 
-  }
-
-  public ArrayList<Triangle> extrudeWallFlat(int wallN, 
+  protected ArrayList<Triangle> extrudeWallFlat(int wallN, 
       float lowY, float highY) {
     switch(wallN) {
       case 0:
@@ -246,27 +501,7 @@ class Room extends Entity {
         return null;
     }
   }
-
-  public ArrayList<Triangle> getTrianglesFromSquare(float x1, float y1,float z1,
-      float x2, float y2, float z2) {
-    //Two triangles : 
-    // (x1,y1,z1)   
-    // * ------- *
-    // | \       |
-    // |  \      |
-    // |   \     |
-    // |    \    |
-    // |     \   |
-    // |      \  |
-    // |       \ |
-    // * ------- * (x2,y2,z2)
-    ArrayList<Triangle> res = new ArrayList<Triangle>();
-
-    res.add(new Triangle(x1,y1,z1, x1,y2, z1, x2,y2,z2));
-    res.add(new Triangle(x1,y1,z1, x2, y1, z2, x2,y2,z2));
-    return res;
-  }
-
+  
   public ArrayList<Triangle> extrudeLineSegTo3DWithWindow(
       Window window, 
       float x1, float z1, float x2, 
@@ -296,7 +531,8 @@ class Room extends Entity {
     float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
 
     float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
-    float windowYBottom = lowY + window.getWindowSpan().getY();
+//    float windowYBottom = lowY + window.getWindowSpan().getY();
+    float windowYBottom = lowY + window.getStartPoint().getY();
 
     res.addAll(getTrianglesFromSquare(x1,highY,z1, 
           relWindowX,lowY,relWindowZ)); //Leftmost
@@ -339,17 +575,182 @@ class Room extends Entity {
         extruded = true;
       }
     }
-    /*
-    for(int i=0 ; i < doors.length() ; i++) {
-      if(wallN == doors[i]) {
-        extrudeWallWithDoor(i);
+    
+    if(! extruded) {
+      res.addAll(extrudeWallFlat(wallN, lowY, highY));
+    }
+
+    return res;
+  }
+
+  public ArrayList<Vector3> extrudeLineSegTo3DWithWindowNormals(
+      Window window, 
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY
+      ) {
+    //Two triangles : 
+    // (x1,z1)                       (x2,z2)
+    // * ---------------------------- * highY
+    // |  |   |                       |
+    // |  |   |  (sx+spanx,sy+spany)  |
+    // |  *---*                       |
+    // |  |EEE|                       |
+    // |  *---*                       |
+    // |(sx,sy)                       |
+    // |  |   |                       |
+    // * ---------------------------- * lowY
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+    float angle = atan2((z2-z1), (x2-x1));
+
+    float relWindowX = (x1+(window.getStartPoint().getX()*cos(angle)));
+    float relWindowZ = (z1+(window.getStartPoint().getX()*sin(angle)));
+
+    float relWindowXPlusSpanX = (relWindowX+(window.getWindowSpan().getX()*cos(angle)));
+    float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
+
+    float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
+    float windowYBottom = lowY + window.getWindowSpan().getY();
+
+    res.addAll(getNormalsFromSquare(x1,highY,z1, 
+          relWindowX,lowY,relWindowZ)); //Leftmost
+
+    res.addAll(getNormalsFromSquare(relWindowX,highY,relWindowZ, 
+          relWindowXPlusSpanX, windowYTop, relWindowZPlusSpanZ)); //Above window
+
+    res.addAll(getNormalsFromSquare(relWindowX,windowYBottom,relWindowZ, 
+          relWindowXPlusSpanX, lowY, relWindowZPlusSpanZ)); //Below window
+
+    res.addAll(getNormalsFromSquare(relWindowXPlusSpanX, highY, relWindowZPlusSpanZ,
+          x2,lowY,z2)); //Rightmost
+    return res; 
+  }
+
+  public ArrayList<Vector3> extrudeWallWithWindowsOrDoorsNormals(Window window, float lowY, float highY) {
+    switch(window.getWallN()) {
+      case 0:
+        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3DWithWindowNormals(window, x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3DWithWindowNormals(window, x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Vector3> extrudeWallFlatNormals(int wallN, float lowY, float highY) {
+    switch(wallN) {
+      case 0:
+        return extrudeLineSegTo3DNormals(x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DNormals(x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3DNormals(x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3DNormals(x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Vector3> getNormalsForWall(int wallN, float lowY, float highY) {
+    boolean extruded = false;
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+   
+    //Tell whether the window is extruded or not.
+    for(int i=0 ; i < windows.size() ; i++) {
+      if(wallN == windows.get(i).getWallN()) {
+        res.addAll(extrudeWallWithWindowsOrDoorsNormals(windows.get(i), lowY, highY));
         extruded = true;
       }
     }
-    */
 
     if(! extruded) {
-      res.addAll(extrudeWallFlat(wallN, lowY, highY));
+      res.addAll(extrudeWallFlatNormals(wallN, lowY, highY));
+    }
+
+    return res;
+  }
+
+  public ArrayList<Point2> extrudeLineSegTo3DWithWindowTexCoords(
+      Window window, 
+      float x1, float z1, float x2, 
+      float z2, float lowY, float highY
+      ) {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+
+    float angle = atan2((z2-z1), (x2-x1));
+
+    float relWindowX = (x1+(window.getStartPoint().getX()*cos(angle)));
+    float relWindowZ = (z1+(window.getStartPoint().getX()*sin(angle)));
+
+    float relWindowXPlusSpanX = (relWindowX+(window.getWindowSpan().getX()*cos(angle)));
+    float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
+
+    float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
+//    float windowYBottom = lowY + window.getWindowSpan().getY();
+    float windowYBottom = lowY + window.getStartPoint().getY();
+
+    Point2 startPoint = new Point2(x1,z1);
+    Point2 relWindowPt = new Point2(relWindowX, relWindowZ);
+    Point2 relWindowPlusSpanPt = new Point2(relWindowXPlusSpanX, relWindowZPlusSpanZ);
+    Point2 endPt = new Point2(x2,z2);
+
+    //We add the texture coords individually for these squares, based on their x and y positions on the wall, from the top left.
+    res.addAll(getTexCoordsFromSquare(0.0,highY, startPoint.dist(relWindowPt), lowY)); //Leftmost
+    res.addAll(getTexCoordsFromSquare(startPoint.dist(relWindowPt),highY, startPoint.dist(relWindowPlusSpanPt), windowYTop)); //Above Window
+    res.addAll(getTexCoordsFromSquare(startPoint.dist(relWindowPt),windowYBottom, startPoint.dist(relWindowPlusSpanPt), lowY)); //Below Window
+    res.addAll(getTexCoordsFromSquare(startPoint.dist(relWindowPlusSpanPt),highY, startPoint.dist(endPt), lowY)); //Right
+
+    return res; 
+  }
+
+  public ArrayList<Point2> extrudeWallWithWindowsOrDoorsTexCoords(Window window, float lowY, float highY) {
+    switch(window.getWallN()) {
+      case 0:
+        return extrudeLineSegTo3DWithWindowTexCoords(window, x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DWithWindowTexCoords(window, x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3DWithWindowTexCoords(window, x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3DWithWindowTexCoords(window, x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Point2> extrudeWallFlatTexCoords(int wallN, float lowY, float highY) {
+    switch(wallN) {
+      case 0:
+        return extrudeLineSegTo3DTexCoords(x,y, x+wt,y, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DTexCoords(x,y, x,y+ht, lowY, highY);
+      case 2:
+        return extrudeLineSegTo3DTexCoords(x+wt,y, x+wt,y+ht, lowY, highY); 
+      case 3:
+        return extrudeLineSegTo3DTexCoords(x,y+ht, x+wt,y+ht, lowY, highY);
+      default:
+        return null;
+    }
+  }
+
+  public ArrayList<Point2> getTexCoordsForWall(int wallN, float lowY, float highY) {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+    boolean extruded = false;
+   
+    //Tell whether the window is extruded or not.
+    for(int i=0 ; i < windows.size() ; i++) {
+      if(wallN == windows.get(i).getWallN()) {
+        res.addAll(extrudeWallWithWindowsOrDoorsTexCoords(windows.get(i), lowY, highY));
+        extruded = true;
+      }
+    }
+
+    if(! extruded) {
+      res.addAll(extrudeWallFlatTexCoords(wallN, lowY, highY));
     }
 
     return res;
@@ -359,18 +760,39 @@ class Room extends Entity {
     windows.add(new Window(wallN, startPoint, span));
   }
 
-  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
-    /*
+  protected void generateTriangles() {
     ArrayList<Triangle> res = new ArrayList<Triangle>();
+    res.addAll(getTrianglesForWall(0, lowY, highY));
+    res.addAll(getTrianglesForWall(1, lowY, highY));
+    res.addAll(getTrianglesForWall(2, lowY, highY));
+    res.addAll(getTrianglesForWall(3, lowY, highY));
+    this.triangles = res;
+  }
 
-    //TODO:Offset room coords by camera pos
-    res.addAll(extrudeLineSegTo3D(x,y, x+wt,y, lowY, highY)); //Side 0
-    res.addAll(extrudeLineSegTo3D(x,y, x,y+ht, lowY, highY)); //Side 1
-    res.addAll(extrudeLineSegTo3D(x+wt,y, x+wt,y+ht, lowY, highY)); //Side 2
-    res.addAll(extrudeLineSegTo3D(x,y+ht, x+wt,y+ht, lowY, highY)); //Side 3
-
-    return res;
+  protected void generateNormals() {
+    /*
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+    res.addAll(getNormalsForWall(0, lowY, highY));
+    res.addAll(getNormalsForWall(1, lowY, highY));
+    res.addAll(getNormalsForWall(2, lowY, highY));
+    res.addAll(getNormalsForWall(3, lowY, highY));
+    this.normals = res;
     */
+
+    this.normals = generateNormalsFromTriangles();
+  }
+
+  protected void generateTexCoords() {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+    res.addAll(getTexCoordsForWall(0, lowY, highY));
+    res.addAll(getTexCoordsForWall(1, lowY, highY));
+    res.addAll(getTexCoordsForWall(2, lowY, highY));
+    res.addAll(getTexCoordsForWall(3, lowY, highY));
+    this.texCoords = res;
+  }
+
+  /*
+  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
     ArrayList<Triangle> res = new ArrayList<Triangle>();
     res.addAll(getTrianglesForWall(0, lowY, highY));
     res.addAll(getTrianglesForWall(1, lowY, highY));
@@ -444,6 +866,7 @@ class Room extends Entity {
 
     return res;
   }
+  */
 }
 
 /*
@@ -529,40 +952,25 @@ class Plane {
     }
     return resultStr;
   }
-}
+} //End Plane
 
 
 class Pillar extends Entity {
   private float radius;
   private float numSlices;
   private float totalAngle;
+  private float lowY;
+  private float highY;
 
-  public Pillar(float x, float y, float radius) {
+  public Pillar(float x, float y, float radius, float lowY, float highY) {
     super(Entity.PILLAR_TYPE, x, y);
     this.radius = radius;
     this.numSlices = 20;
     //totalAngle = 360.0f;
     totalAngle = 360.0f;
     //this.widthResolution = 10;
-  }
-
-  private ArrayList<Triangle> extrudeLineSegTo3D(float x1, float z1, float x2, float z2, float lowY, float highY) {
-    //Two triangles : 
-    // (x1,z1)   (x2,z2)
-    // * ------- * highY
-    // | \       |
-    // |  \      |
-    // |   \     |
-    // |    \    |
-    // |     \   |
-    // |      \  |
-    // |       \ |
-    // * ------- * lowY
-    ArrayList<Triangle> res = new ArrayList<Triangle>();
-
-    res.add(new Triangle(x1,highY,z1, x1,lowY, z1, x2,lowY,z2));
-    res.add(new Triangle(x1,highY,z1, x2, highY, z2, x2,lowY,z2));
-    return res; 
+    this.lowY = lowY;
+    this.highY = highY;
   }
 
   public float degreeToRad(float degree) {
@@ -570,7 +978,7 @@ class Pillar extends Entity {
     return ( (degree) * (PI / 180.0) );
   }
 
-  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
+  protected void generateTriangles() {
     ArrayList<Triangle> res = new ArrayList<Triangle>();
 
     float angle = (totalAngle/numSlices);
@@ -590,10 +998,14 @@ class Pillar extends Entity {
       }
     }
 
-    return res;
+    this.triangles = res;
   }
 
-  public ArrayList<Point2> getUVCoords() {
+  protected void generateNormals() {
+    this.normals = generateNormalsFromTriangles();
+  }
+
+  protected void generateTexCoords() {
     ArrayList<Point2> res = new ArrayList<Point2>();
 
     float amount = 6.0;
@@ -608,9 +1020,9 @@ class Pillar extends Entity {
       res.add(new Point2(amount,0));
     }
 
-    return res;
+    this.texCoords = res;
   }
-}
+} //END Pillar
 
 class GameLogic extends GameEventListener{
   protected ArrayList<Entity> entities;
@@ -621,7 +1033,7 @@ class GameLogic extends GameEventListener{
 
   //Factory method
   public void createRoom(int x, int y, int w, int h) {
-    Room room = new Room(x,y,w,h);
+    Room room = new Room(x,y,w,h, 0.0f, 2.0f);
     room.addWindow(0, new Point2(0.3, 0.6), new Point2(0.5,0.5) );
     //room.addDoor(0, 3, 6);
     entities.add(room);
@@ -677,6 +1089,7 @@ class GameLogic extends GameEventListener{
 	  }
   }
 
+  /*
   public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
     String resultStr = "";
     //Cycle through entities and output their vertices
@@ -704,6 +1117,16 @@ class GameLogic extends GameEventListener{
     }
     return resultStr;
   }
+  */
+
+  public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
+    String resultStr = "";
+    //Cycle through entities and output their vertices
+    for(Entity e : entities) {
+      resultStr += e.toString();  
+    }
+    return resultStr;
+  }
 
   public void init() {
 //    generateGrid(7,7);
@@ -724,7 +1147,7 @@ class GameLogic extends GameEventListener{
 
     ArrayList<Entity> pillars = new ArrayList<Entity>();
 //    Pillar pillar = new Pillar(10.0,10.0, 1.0);
-    Pillar pillar = new Pillar(0.0,0.0, 0.5);
+    Pillar pillar = new Pillar(0.0,0.0, 0.5, 0.0, 2.0);
     pillars.add(pillar);
     //System.out.println("Pillar:\n---\n" + pillar.toString() + "\n---");
     System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");

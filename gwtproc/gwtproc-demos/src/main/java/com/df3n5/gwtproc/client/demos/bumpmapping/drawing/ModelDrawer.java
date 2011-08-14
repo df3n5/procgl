@@ -63,7 +63,9 @@ public class ModelDrawer {
 		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
 		
 		lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
-
+		//glContext.uniform3f(lightPositionUniform, 1.0f, 1.0f, 1.0f);
+		glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
+		
 		//Set Texture Sampler to look for texture in texture unit 0
 //		uTexSamp = glContext.getUniformLocation(shaderProgram, "uTexSamp");
 //		glContext.uniform1i(uTexSamp, 0);
@@ -213,7 +215,7 @@ public class ModelDrawer {
 
 		//This needs to be done in this order.
 		perspectiveMatrix = MatrixUtil.createPerspectiveMatrix(45, 1.0f, 0.1f, 100);
-		translationMatrix = MatrixUtil.createTranslationMatrix(-camera.getXPos(), -camera.getYPos(), -camera.getZPos());
+		translationMatrix = MatrixUtil.createTranslationMatrix(-camera.getX(), -camera.getY(), -camera.getZ());
 		rotationMatrix = MatrixUtil.createRotationMatrix(camera.getRotationXAxis(), camera.getRotationYAxis(), 0);
 		resultingMatrix = perspectiveMatrix.multiply(rotationMatrix).multiply(translationMatrix);
 
@@ -251,7 +253,7 @@ public class ModelDrawer {
 	public void beginDraw() {
 		glContext.clear(WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT);
 		
-		translationMatrix = MatrixUtil.createTranslationMatrix(-camera.getXPos(), -camera.getYPos(), -camera.getZPos());
+		translationMatrix = MatrixUtil.createTranslationMatrix(-camera.getX(), -camera.getY(), -camera.getZ());
 		rotationMatrix = MatrixUtil.createRotationMatrix(camera.getRotationXAxis(), camera.getRotationYAxis(), 0);
 		resultingMatrix = perspectiveMatrix.multiply(rotationMatrix).multiply(translationMatrix);
 

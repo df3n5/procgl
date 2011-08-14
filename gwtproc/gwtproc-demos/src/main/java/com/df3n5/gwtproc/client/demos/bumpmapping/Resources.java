@@ -29,6 +29,12 @@ public interface Resources extends ClientBundle {
 	/** The instance of the Resources ClientBundle. */
 	public static Resources INSTANCE = GWT.create(Resources.class);
 
+	@Source(value = { "bump_mapping.frag" })
+	TextResource bumpMappingFrag();
+
+	@Source(value = { "bump_mapping.vert" })
+	TextResource bumpMappingVert();
+
 	/**
 	 * The fragment shader to use in the example.
 	 * 
@@ -36,12 +42,6 @@ public interface Resources extends ClientBundle {
 	 */
 	@Source(value = { "fragment-shader.txt" })
 	TextResource fragmentShader();
-
-	@Source(value = { "bump_mapping.frag" })
-	TextResource bumpMappingFrag();
-
-	@Source(value = { "bump_mapping.vert" })
-	TextResource bumpMappingVert();
 
 	/**
 	 * The vertex shader to use in the example.
