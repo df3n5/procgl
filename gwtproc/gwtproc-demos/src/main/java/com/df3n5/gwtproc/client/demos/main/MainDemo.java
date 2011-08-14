@@ -123,10 +123,12 @@ public class MainDemo extends AbstractGwtProcDemo {
 		drawer = new ModelDrawer(glContext);
 
 
+		/*
 		//Start
 		super.start();
 		webGLCanvas.setFocus(true);
 		//Endstart
+		*/
 	}
 	
 	private long getTimeStampMilli() {

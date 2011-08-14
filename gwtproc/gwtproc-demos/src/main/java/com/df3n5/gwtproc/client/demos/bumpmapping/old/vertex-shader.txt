@@ -1,0 +1,126 @@
+/*
+attribute vec3 vertexPosition;
+attribute vec2 texPosition;
+uniform mat4 projectionMatrix;
+varying vec2 texCoord;
+
+
+void main() {
+	gl_Position = projectionMatrix * vec4(vertexPosition, 1.0);
+	texCoord = texPosition;
+}
+*/
+/*
+//XXX:Working
+//Newer
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+varying vec2 vTextureCoord;
+
+void main(void) {
+//    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	gl_Position = uMVMatrix * vec4(aVertexPosition, 1.0);
+    vTextureCoord = aTextureCoord;
+}
+*/
+/*
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
+varying vec2 vTextureCoord;
+
+void main() 
+{
+	vTextureCoord = aTextureCoord;
+	gl_Position = uMVMatrix * vec4(aVertexPosition, 1.0);
+}
+*/
+/*
+//Per frag lighting
+uniform mat4 uMatViewInverse;
+uniform mat4 uMatViewProjection;
+uniform vec3 uLightPosition;
+uniform vec3 uEyePosition;
+
+varying vec2 vTexcoord;
+varying vec3 vViewDirection;
+varying vec3 vLightDirection;
+
+attribute vec4 aVertex;
+attribute vec2 aTexcoord0;
+attribute vec3 aNormal;
+attribute vec3 aBinormal;
+attribute vec3 aTangent;
+   
+void main( void )
+{
+   // Transform eye vector into world space
+   vec3 eyePositionWorld = (uMatViewInverse * vec4(uEyePosition, 1.0)).xyz;
+   
+   // Compute world-space direction vector
+   vec3 viewDirectionWorld = eyePositionWorld - aVertex.xyz;
+      
+   // Transform light position into world space
+   vec3 lightPositionWorld = (uMatViewInverse * vec4(uLightPosition, 1.0)).xyz;   
+   
+   // Compute world-space light dirction vector
+   vec3 lightDirectionWorld = lightPositionWorld - aVertex.xyz;
+   
+   // Create the tangent matrix
+   mat3 tangentMat = mat3( aTangent, 
+                           aBinormal,
+                           aNormal );   
+   
+   // Transform the view and light vectors into tangent space
+   vViewDirection = viewDirectionWorld * tangentMat;
+   vLightDirection = lightDirectionWorld * tangentMat;
+      
+   // Transform output position
+   gl_Position = uMatViewProjection * aVertex;
+   
+   // Pass through texture coordinate
+   vTexcoord = aTexcoord0.xy;
+
+}
+*/
+
+/*
+//TODO:RIPPED CODE
+uniform float time;
+varying vec2 v_texCoord2D;
+varying vec3 v_texCoord3D;
+varying vec4 v_color;
+
+void main( void )
+{
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+
+	v_texCoord2D = gl_MultiTexCoord0.xy;
+    
+    v_texCoord3D = gl_Vertex.xyz;
+	
+	v_color = gl_Color;
+
+}
+*/
+
+//Newest
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+varying vec2 vTextureCoord;
+
+void main(void) {
+//    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	gl_Position = uMVMatrix * vec4(aVertexPosition, 1.0);
+    vTextureCoord = aTextureCoord;
+}

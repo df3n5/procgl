@@ -1,6 +1,7 @@
 package com.df3n5.gwtproc.client;
 
 import com.df3n5.gwtproc.client.demos.main.MainDemo;
+import com.df3n5.gwtproc.client.demos.bumpmapping.BumpMappingDemo;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -30,8 +31,11 @@ public class GwtProcDemos implements EntryPoint {
 */
 		MainDemo mainDemo  = new MainDemo();
 		tp.add(mainDemo, "Main");
+
+		BumpMappingDemo bmDemo = new BumpMappingDemo();
+		tp.add(bmDemo, "BumpMapping");
 		
-		tp.selectTab(0);
+		tp.selectTab(1);
 		RootPanel.get("gwtproc-demos").add(tp);
 	}
 }
