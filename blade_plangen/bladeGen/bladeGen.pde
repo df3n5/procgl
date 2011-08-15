@@ -205,8 +205,8 @@ abstract class Entity {
   }
 
   public static final int ROOM_TYPE = 0;
-  public static final int HALL_TYPE = 1;
-  public static final int PILLAR_TYPE = 2;
+  public static final int PILLAR_TYPE = 1;
+  public static final int PLANE_TYPE = 2;
 
   public int getType() { return type; }
   public float getX() { return x; }
@@ -878,10 +878,11 @@ class Hallway extends Entity {
 */
 
 //TODO:Make into an entity? Don't see the point...
-class Plane {
+class Plane extends Entity {
   int xMin, zMin, xMax, zMax, y;
 
   public Plane(int xMin, int zMin, int xMax, int zMax, int y) {
+    super(Entity.PLANE_TYPE, xMin, zMin);
     this.xMin = xMin;
     this.zMin = zMin;
     this.xMax = xMax;
@@ -889,7 +890,7 @@ class Plane {
     this.y = y;
   }
 
-  public ArrayList<Triangle> getTriangles()
+  public void generateTriangles()
   {
     //Two triangles : 
     //           (xMax, y, zMax)
@@ -910,10 +911,10 @@ class Plane {
     res.add(new Triangle(xMin,y,zMax, xMin,y,zMin, xMax,y,zMin));
     res.add(new Triangle(xMin,y,zMax, xMax,y,zMax, xMax,y,zMin));
 
-    return res;
+    this.triangles = res;
   }
 
-  public ArrayList<Point2> getUVCoords()
+  public void generateTexCoords()
   {
     ArrayList<Point2> res = new ArrayList<Point2>();
     float amount = 6.0;
@@ -925,9 +926,32 @@ class Plane {
     res.add(new Point2(amount,amount));
     res.add(new Point2(amount,0));
 
-    return res;
+    this.texCoords = res;
   }
 
+  public void generateNormals()
+  {
+    ArrayList<Vector3> res = new ArrayList<Vector3>();
+    Vector3 normal;
+    if(y <= 1.0){
+      normal = new Vector3(0,1,0);
+    }
+    else
+    {
+      normal = new Vector3(0,-1,0);
+    }
+
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+    res.add(normal);
+
+    this.normals = res;
+  }
+
+  /*
   public String toString() {
     String resultStr = "";
     ArrayList<Triangle> triangles = getTriangles();
@@ -952,6 +976,7 @@ class Plane {
     }
     return resultStr;
   }
+  */
 } //End Plane
 
 
@@ -1128,6 +1153,13 @@ class GameLogic extends GameEventListener{
     return resultStr;
   }
 
+  public void outputToFile(Entity entity, String filename) {
+    PrintWriter outputter = createWriter(filename); 
+    outputter.print(entity.toString());
+    outputter.flush();
+    outputter.close();
+  }
+
   public void init() {
 //    generateGrid(7,7);
     generateOffice01(3,4,7);
@@ -1139,18 +1171,27 @@ class GameLogic extends GameEventListener{
     output.flush(); // Writes the remaining data to the file
     output.close(); // Finishes the file
 
+
     Plane ceiling = new Plane(0,0, 1000,1000, 2);
-    System.out.println("Ceiling:\n---\n" + ceiling.toString() + "\n---");
+    System.out.print("Ceiling:\n---\n" + ceiling.toString() + "\n---");
+    outputToFile(ceiling, "ceiling.txt");
 
     Plane floor = new Plane(0,0, 1000,1000, 0);
     System.out.println("Floor:\n---\n" + floor.toString() + "\n---");
+    outputToFile(floor, "floor.txt");
 
+    PrintWriter pillarOutputter = createWriter("pillars.txt"); 
     ArrayList<Entity> pillars = new ArrayList<Entity>();
-//    Pillar pillar = new Pillar(10.0,10.0, 1.0);
+    //TODO : Generate a pattern of pillars
     Pillar pillar = new Pillar(0.0,0.0, 0.5, 0.0, 2.0);
     pillars.add(pillar);
     //System.out.println("Pillar:\n---\n" + pillar.toString() + "\n---");
     System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");
+    pillarOutputter.print(getEntitiesAsStr(10,10,pillars));
+    pillarOutputter.flush();
+    pillarOutputter.close();
+
+
   }
 
   public void update() {
