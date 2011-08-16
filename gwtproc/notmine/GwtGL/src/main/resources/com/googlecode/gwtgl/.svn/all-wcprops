@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/179/trunk/GwtGL/src/main/resources/com/googlecode/gwtgl
+END
+binding.gwt.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/179/trunk/GwtGL/src/main/resources/com/googlecode/gwtgl/binding.gwt.xml
+END
+util.gwt.xml
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/128/trunk/GwtGL/src/main/resources/com/googlecode/gwtgl/util.gwt.xml
+END
+array.gwt.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/128/trunk/GwtGL/src/main/resources/com/googlecode/gwtgl/array.gwt.xml
+END

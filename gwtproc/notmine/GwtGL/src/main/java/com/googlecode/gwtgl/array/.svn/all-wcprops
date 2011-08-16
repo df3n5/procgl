@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array
+END
+Int16Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Int16Array.java
+END
+Int8Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Int8Array.java
+END
+Uint32Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Uint32Array.java
+END
+ArrayBufferView.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/172/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/ArrayBufferView.java
+END
+package-info.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/169/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/package-info.java
+END
+DataView.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/172/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/DataView.java
+END
+TypedArray.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/172/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/TypedArray.java
+END
+Uint16Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Uint16Array.java
+END
+Uint8Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Uint8Array.java
+END
+ArrayBuffer.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/172/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/ArrayBuffer.java
+END
+Float32Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Float32Array.java
+END
+IntBasedTypedArray.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/IntBasedTypedArray.java
+END
+Float64Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Float64Array.java
+END
+Int32Array.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/173/trunk/GwtGL/src/main/java/com/googlecode/gwtgl/array/Int32Array.java
+END
