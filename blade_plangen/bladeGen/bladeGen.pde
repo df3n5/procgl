@@ -212,12 +212,6 @@ abstract class Entity {
   public float getX() { return x; }
   public float getY() { return y; }
 
-  /*
-  public abstract ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy);
-
-  public abstract ArrayList<Point2> getUVCoords();
-  */
-
   protected abstract void generateTriangles();
 
   protected abstract void generateNormals();
@@ -413,7 +407,7 @@ abstract class Entity {
     //Width is the length of the wall, which is distance between points in 2d
     float wt = (float)Math.sqrt( ((x2-x1)*(x2-x1)) + ((z2-z1)*(z2-z1)));
 
-    res.addAll(getTexCoordsFromSquare(0.0, highY, wt, lowY));
+    res.addAll(getTexCoordsFromSquare(0.0f, highY, wt, lowY));
     return res; 
   }
 
@@ -519,9 +513,6 @@ class Room extends Entity {
     // |  |   |                       |
     // * ---------------------------- * lowY
     ArrayList<Triangle> res = new ArrayList<Triangle>();
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
-//
     float angle = atan2((z2-z1), (x2-x1));
 
     float relWindowX = (x1+(window.getStartPoint().getX()*cos(angle)));
@@ -531,7 +522,6 @@ class Room extends Entity {
     float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
 
     float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
-//    float windowYBottom = lowY + window.getWindowSpan().getY();
     float windowYBottom = lowY + window.getStartPoint().getY();
 
     res.addAll(getTrianglesFromSquare(x1,highY,z1, 
@@ -690,7 +680,6 @@ class Room extends Entity {
     float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
 
     float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
-//    float windowYBottom = lowY + window.getWindowSpan().getY();
     float windowYBottom = lowY + window.getStartPoint().getY();
 
     Point2 startPoint = new Point2(x1,z1);
@@ -770,15 +759,6 @@ class Room extends Entity {
   }
 
   protected void generateNormals() {
-    /*
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-    res.addAll(getNormalsForWall(0, lowY, highY));
-    res.addAll(getNormalsForWall(1, lowY, highY));
-    res.addAll(getNormalsForWall(2, lowY, highY));
-    res.addAll(getNormalsForWall(3, lowY, highY));
-    this.normals = res;
-    */
-
     this.normals = generateNormalsFromTriangles();
   }
 
@@ -790,94 +770,8 @@ class Room extends Entity {
     res.addAll(getTexCoordsForWall(3, lowY, highY));
     this.texCoords = res;
   }
-
-  /*
-  public ArrayList<Triangle> getTriangles(float lowY, float highY, int camx, int camy) {
-    ArrayList<Triangle> res = new ArrayList<Triangle>();
-    res.addAll(getTrianglesForWall(0, lowY, highY));
-    res.addAll(getTrianglesForWall(1, lowY, highY));
-    res.addAll(getTrianglesForWall(2, lowY, highY));
-    res.addAll(getTrianglesForWall(3, lowY, highY));
-    return res;
-  }
-
-  public ArrayList<Point2> getUVCoords() {
-    ArrayList<Point2> res = new ArrayList<Point2>();
-    float amount = 6.0;
-    // TODO:Verify this is correct.
-    res.add(new Point2(0,amount));
-    res.add(new Point2(0,0));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(amount,amount));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(0,0));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(amount,amount));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(0,0));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(amount,amount));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(0,0));
-    res.add(new Point2(amount,0));
-
-    res.add(new Point2(0,amount));
-    res.add(new Point2(amount,amount));
-    res.add(new Point2(amount,0));
-
-    //TODO:Remove the hack!
-    for(int i = 0 ; i < windows.size() ; i++){
-      res.add(new Point2(0,amount));
-      res.add(new Point2(0,0));
-      res.add(new Point2(amount,0));
-
-      res.add(new Point2(0,amount));
-      res.add(new Point2(amount,amount));
-      res.add(new Point2(amount,0));
-
-      res.add(new Point2(0,amount));
-      res.add(new Point2(0,0));
-      res.add(new Point2(amount,0));
-
-      res.add(new Point2(0,amount));
-      res.add(new Point2(amount,amount));
-      res.add(new Point2(amount,0));
-
-      res.add(new Point2(0,amount));
-      res.add(new Point2(0,0));
-      res.add(new Point2(amount,0));
-
-      res.add(new Point2(0,amount));
-      res.add(new Point2(amount,amount));
-      res.add(new Point2(amount,0));
-    }
-
-    return res;
-  }
-  */
 }
 
-/*
-class Hallway extends Entity {
-  public Hallway(int x, int y) {
-    super(x, y);
-  }
-}
-*/
-
-//TODO:Make into an entity? Don't see the point...
 class Plane extends Entity {
   int xMin, zMin, xMax, zMax, y;
 
@@ -905,9 +799,6 @@ class Plane extends Entity {
     // * ------- *
     //(xMin, y, zMin)
     ArrayList<Triangle> res = new ArrayList<Triangle>();
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x1,lowY,z1));
-//    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
-
     res.add(new Triangle(xMin,y,zMax, xMin,y,zMin, xMax,y,zMin));
     res.add(new Triangle(xMin,y,zMax, xMax,y,zMax, xMax,y,zMin));
 
@@ -951,32 +842,6 @@ class Plane extends Entity {
     this.normals = res;
   }
 
-  /*
-  public String toString() {
-    String resultStr = "";
-    ArrayList<Triangle> triangles = getTriangles();
-    ArrayList<Point2> uvCoords = getUVCoords();
-    int i = 0;
-    for(Triangle tri : triangles) {
-      resultStr += Float.toString(tri.getX1()) + " " +
-        Float.toString(tri.getY1()) + " " +
-        Float.toString(tri.getZ1()) + " " +
-        Float.toString(uvCoords.get(i).getX()) + " " +
-        Float.toString(uvCoords.get(i++).getY()) + "\n" +
-        Float.toString(tri.getX2()) + " " +
-        Float.toString(tri.getY2()) + " " +
-        Float.toString(tri.getZ2()) + " " +
-        Float.toString(uvCoords.get(i).getX()) + " " + 
-        Float.toString(uvCoords.get(i++).getY()) + "\n" +
-        Float.toString(tri.getX3()) + " " +
-        Float.toString(tri.getY3()) + " " +
-        Float.toString(tri.getZ3()) + " " +
-        Float.toString(uvCoords.get(i).getX()) + " " +
-        Float.toString(uvCoords.get(i++).getY()) + "\n";
-    }
-    return resultStr;
-  }
-  */
 } //End Plane
 
 
@@ -1114,36 +979,6 @@ class GameLogic extends GameEventListener{
 	  }
   }
 
-  /*
-  public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
-    String resultStr = "";
-    //Cycle through entities and output their vertices
-    for(Entity e : entities) {
-      ArrayList<Triangle> triangles = e.getTriangles(0,2, camx,camy);
-      ArrayList<Point2> uvCoords = e.getUVCoords();
-      int i = 0;
-      for(Triangle tri : triangles) {
-        resultStr += Float.toString(tri.getX1()) + " " +
-          Float.toString(tri.getY1()) + " " +
-          Float.toString(tri.getZ1()) + " " +
-          Float.toString(uvCoords.get(i).getX()) + " " +
-          Float.toString(uvCoords.get(i++).getY()) + "\n" +
-          Float.toString(tri.getX2()) + " " +
-          Float.toString(tri.getY2()) + " " +
-          Float.toString(tri.getZ2()) + " " +
-          Float.toString(uvCoords.get(i).getX()) + " " + 
-          Float.toString(uvCoords.get(i++).getY()) + "\n" +
-          Float.toString(tri.getX3()) + " " +
-          Float.toString(tri.getY3()) + " " +
-          Float.toString(tri.getZ3()) + " " +
-          Float.toString(uvCoords.get(i).getX()) + " " +
-          Float.toString(uvCoords.get(i++).getY()) + "\n";
-      }
-    }
-    return resultStr;
-  }
-  */
-
   public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
     String resultStr = "";
     //Cycle through entities and output their vertices
@@ -1190,8 +1025,6 @@ class GameLogic extends GameEventListener{
     pillarOutputter.print(getEntitiesAsStr(10,10,pillars));
     pillarOutputter.flush();
     pillarOutputter.close();
-
-
   }
 
   public void update() {
@@ -1238,7 +1071,6 @@ class App {
 App app;
 
 void setup() {
-
   app = new App();
   app.init();
 }
