@@ -1,18 +1,3 @@
-/**   
- * Copyright 2009-2010 Sönke Sothmann, Steffen Schäfer and others
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.df3n5.gwtproc.client;
 
 import com.google.gwt.canvas.client.Canvas;
@@ -36,8 +21,7 @@ public abstract class AbstractGwtProcDemo extends FlexTable {
 	 * Canvas to render on.
 	 */
 	protected AbstractGwtProcDemo() {
-		// create the button to launch the example
-		final PushButton button = new PushButton("Launch example!");
+		final PushButton button = new PushButton("Launch");
 		setWidget(0, 0, button);
 		
 		int width = 1024;
@@ -88,18 +72,17 @@ public abstract class AbstractGwtProcDemo extends FlexTable {
 	}
 
 	/**
-	 * Initializes the needed resources of the example.
+	 * Initializes the needed resources of the demo.
 	 */
 	protected abstract void init();
 
 	/**
 	 * Updates the state of the game.
-	 * TODO:Make abstract.
 	 */
 	protected abstract void update();
 	
 	/**
-	 * Draws the examle.
+	 * Draws the demo.
 	 */
 	protected abstract void draw();
 

@@ -24,6 +24,4 @@ public class GwtTestGwtProcDemos extends GWTTestCase {
   public String getModuleName() {
     return "com.df3n5.gwtproc.GwtProcDemosJUnit";
   }
-
-
 }

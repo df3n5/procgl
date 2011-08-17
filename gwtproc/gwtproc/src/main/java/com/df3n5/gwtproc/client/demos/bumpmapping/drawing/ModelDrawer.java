@@ -17,10 +17,11 @@ public class ModelDrawer {
 	protected final WebGLRenderingContext glContext;
 	
 	private Camera camera;
-	
-	private WebGLProgram shaderProgram;
+	/*
+	private WebGLProgram[] shaderPrograms;
 	
 	//ATTRIB
+
 	private int vertexPositionAttribute;
 	private int normalAttribute;
 	private int textureCoordAttribute;
@@ -35,8 +36,9 @@ public class ModelDrawer {
 	private WebGLUniformLocation lightPositionUniform;
 //	private WebGLUniformLocation lightDirUniform;
 //	private WebGLUniformLocation eyeDirUniform;
+	*/
 
-	private WebGLUniformLocation uTexSamp;
+//	private WebGLUniformLocation uTexSamp;
 	
 	private FloatMatrix perspectiveMatrix;
 	private FloatMatrix translationMatrix;
@@ -51,130 +53,7 @@ public class ModelDrawer {
 	///----------------------------------------------------------------------------------------------------------------
 	///----------------------------------------------------------------------------------------------------------------
 	///----------------------------------------------------------------------------------------------------------------
-	
-	/**
-	 * Note: This has to be called each time the matrices change.
-	 */
-	protected void setCommonUniforms() {
-		mvUniform = glContext.getUniformLocation(shaderProgram, "uMVMatrix");
-		glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
 		
-		projectionUniform = glContext.getUniformLocation(shaderProgram, "uPMatrix");
-		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
-		
-		lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
-		//glContext.uniform3f(lightPositionUniform, 1.0f, 1.0f, 1.0f);
-		glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
-		
-		//Set Texture Sampler to look for texture in texture unit 0
-//		uTexSamp = glContext.getUniformLocation(shaderProgram, "uTexSamp");
-//		glContext.uniform1i(uTexSamp, 0);
-	}
-
-
-	
-	protected void setUniforms(Model model) {
-		switch(model.getType()) {
-			case Model.WALL_TYPE:
-				glContext.uniform1i(procTextureTypeUniform, 0);
-				break;
-			case Model.FLOOR_TYPE:
-				glContext.uniform1i(procTextureTypeUniform, 4);
-				break;
-			case Model.CEILING_TYPE:
-				glContext.uniform1i(procTextureTypeUniform, 3);
-				break;
-			case Model.PILLAR_TYPE:
-				glContext.uniform1i(procTextureTypeUniform, 3);
-				break;
-			case Model.SKYBOX_TYPE:
-				glContext.uniform1i(procTextureTypeUniform, 1);
-				break;
-		}
-	}
-	
-	/**
-	 * Creates an Shader instance defined by the ShaderType and the source.
-	 * 
-	 * @param shaderType
-	 *            the type of the shader to create
-	 * @param source
-	 *            the source of the shader
-	 * @return the created Shader instance.
-	 */
-	protected WebGLShader getShader(int shaderType, String source) {
-		WebGLShader shader = glContext.createShader(shaderType);
-		glContext.shaderSource(shader, source);
-		glContext.compileShader(shader);
-
-		// check if the Shader is successfully compiled
-		if (!glContext.getShaderParameterb(shader, WebGLRenderingContext.COMPILE_STATUS)) {
-			throw new RuntimeException(glContext.getShaderInfoLog(shader));
-		}
-
-		return shader;
-	}
-	
-	/**
-	 * Creates the ShaderProgram used by the example to render.
-	 */
-	private void initShaders() {
-		/*
-		WebGLShader vertexShader = getShader(WebGLRenderingContext.VERTEX_SHADER,
-				Resources.INSTANCE.vertexShader().getText());
-		WebGLShader fragmentShader = getShader(WebGLRenderingContext.FRAGMENT_SHADER,
-				Resources.INSTANCE.fragmentShader().getText());
-				*/
-
-		WebGLShader vertexShader = getShader(WebGLRenderingContext.VERTEX_SHADER,
-				Resources.INSTANCE.bumpMappingVert().getText());
-		WebGLShader fragmentShader = getShader(WebGLRenderingContext.FRAGMENT_SHADER,
-				Resources.INSTANCE.bumpMappingFrag().getText());
-		// Create the program object
-		shaderProgram = glContext.createProgram();
-		glContext.attachShader(shaderProgram, vertexShader);
-		glContext.attachShader(shaderProgram, fragmentShader);
-		
-		glContext.linkProgram(shaderProgram);
-		
-		/*
-		vertexPositionAttribute = glContext.getAttribLocation(shaderProgram, "aPos");
-		glContext.enableVertexAttribArray(vertexPositionAttribute);
-		
-		textureCoordAttribute = glContext.getAttribLocation(shaderProgram, "aTexCoord");
-	    glContext.enableVertexAttribArray(textureCoordAttribute);
-		*/
-	    
-		/*
-		normalAttribute = glContext.getAttribLocation(shaderProgram, "aNorm");
-	    glContext.enableVertexAttribArray(normalAttribute);
-
-		aBinorm1Attribute = glContext.getAttribLocation(shaderProgram, "aBinorm1");
-	    glContext.enableVertexAttribArray(aBinorm1Attribute);
-
-		aBinorm2Attribute = glContext.getAttribLocation(shaderProgram, "aBinorm2");
-	    glContext.enableVertexAttribArray(aBinorm2Attribute);
-		*/
-		
-		procTextureTypeUniform = glContext.getUniformLocation(shaderProgram, "uProcTextureType");
-		/*
-		procTextureTypeUniform = glContext.getUniformLocation(shaderProgram, "uProcTextureType");
-
-		lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
-		*/
-		
-	    // Check the link status
-		boolean linked = glContext.getProgramParameterb(shaderProgram, WebGLRenderingContext.LINK_STATUS);
-		if (!linked) {
-			String infoLog = glContext.getProgramInfoLog(shaderProgram);
-			GWT.log("Error linking program:\n" + infoLog, null);
-			glContext.deleteProgram(shaderProgram);
-			return;
-		}
-		
-		ErrorHandler.checkErrors(glContext);
-	}
-	
 	protected void initControls(Canvas webGLCanvas) {
 		webGLCanvas.addMouseMoveHandler(camera);
 		webGLCanvas.addMouseDownHandler(camera);
@@ -184,23 +63,11 @@ public class ModelDrawer {
 		webGLCanvas.addKeyUpHandler(camera);
 	}
 
-	protected void setAttribs() {
-		vertexPositionAttribute = glContext.getAttribLocation(shaderProgram, "aVertexPosition");
-		glContext.enableVertexAttribArray(vertexPositionAttribute);
-
-		textureCoordAttribute = glContext.getAttribLocation(shaderProgram, "aTextureCoord");
-		glContext.enableVertexAttribArray(textureCoordAttribute);
-
-		normalAttribute = glContext.getAttribLocation(shaderProgram, "aNorm");
-	    glContext.enableVertexAttribArray(normalAttribute);
-	}
-
 	///----------------------------------------------------------------------------------------------------------------
 	///----------------------------------------------------------------------------------------------------------------
 	///----------------------------------------------------------------------------------------------------------------
 
 	public void init(Canvas webGLCanvas) {
-		initShaders();
 		initControls(webGLCanvas);
 
 		// Set the clear depth (everything is cleared)
@@ -219,9 +86,7 @@ public class ModelDrawer {
 		rotationMatrix = MatrixUtil.createRotationMatrix(camera.getRotationXAxis(), camera.getRotationYAxis(), 0);
 		resultingMatrix = perspectiveMatrix.multiply(rotationMatrix).multiply(translationMatrix);
 
-		glContext.useProgram(shaderProgram);
-
-		setAttribs();
+		//setAttribs();
 
 		/*
 		//Lighting stuff.
@@ -246,6 +111,7 @@ public class ModelDrawer {
 		*/
 	}
 	
+	
 	public void update() {
 		camera.update();
 	}
@@ -256,23 +122,19 @@ public class ModelDrawer {
 		translationMatrix = MatrixUtil.createTranslationMatrix(-camera.getX(), -camera.getY(), -camera.getZ());
 		rotationMatrix = MatrixUtil.createRotationMatrix(camera.getRotationXAxis(), camera.getRotationYAxis(), 0);
 		resultingMatrix = perspectiveMatrix.multiply(rotationMatrix).multiply(translationMatrix);
-
-		setCommonUniforms();
 	}
 
-	public void drawModel(Model model) {
-		setUniforms(model);
+	public void drawModel(Model model, boolean isProc) {
+		glContext.useProgram(model.getShaderProgram(glContext, isProc));
+		model.setCommonUniforms(glContext,
+				camera,
+				perspectiveMatrix,
+				resultingMatrix,
+				isProc);
+		model.setUniforms(glContext, isProc);
+		model.setCommonAttribs(glContext, isProc);
+		model.setAttribs(glContext, isProc);
 
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, model.getVertexBuffer());
-		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-		
-		//Load the vertex texture data into buffer
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, model.getTexCoordBuffer());
-		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
-		
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, model.getNormalBuffer());
-		glContext.vertexAttribPointer(normalAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-		
 		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, model.getNTriangles());
 	}
 	
