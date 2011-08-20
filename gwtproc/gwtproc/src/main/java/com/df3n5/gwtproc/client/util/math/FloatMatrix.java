@@ -17,18 +17,6 @@ package com.df3n5.gwtproc.client.util.math;
 
 import java.util.Arrays;
 
-/**
- * TODO should we use a "standard" Java matrix and vector api? Does it work in
- * GWT?
- * 
- * Representation of a matrix constructed of float fields. The first dimension
- * of the data array represents the height of the Matrix and the second
- * dimension represents the width. So the matrix is saved line-wise.
- * 
- * @author Steffen Schäfer
- * @author Sönke Sothmann
- * 
- */
 public class FloatMatrix {
 
 	/**

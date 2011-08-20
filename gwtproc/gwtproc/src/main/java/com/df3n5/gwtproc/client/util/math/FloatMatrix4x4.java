@@ -1,11 +1,5 @@
 package com.df3n5.gwtproc.client.util.math;
 
-/**
- * Represents a 4x4 matrix.
- * 
- * @author Sönke Sothmann
- * 
- */
 public class FloatMatrix4x4 extends FloatMatrix {
 
 	/**
