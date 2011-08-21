@@ -16,7 +16,7 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 	protected AbstractModelLoader loader;
 	protected ModelDrawer drawer;
 	protected Model[] models;
-	protected static final boolean isProc = true;
+	protected static final boolean isProc = false;
 
 	public BumpMappingDemo() {
 		super();

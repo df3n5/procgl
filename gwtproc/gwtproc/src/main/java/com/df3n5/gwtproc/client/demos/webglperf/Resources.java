@@ -9,11 +9,17 @@ public interface Resources extends ClientBundle {
 
 	public static Resources INSTANCE = GWT.create(Resources.class);
 
-	@Source(value = { "fragment-shader.txt" })
-	TextResource fragmentShader();
+	@Source(value = { "withtex.frag" })
+	TextResource fragmentShaderWithTex();
 
-	@Source(value = { "vertex-shader.txt" })
-	TextResource vertexShader();
+	@Source(value = { "withtex.vert" })
+	TextResource vertexShaderWithTex();
+	
+	@Source(value = { "notex.frag" })
+	TextResource fragmentShaderWithoutTex();
+
+	@Source(value = { "notex.vert" })
+	TextResource vertexShaderWithoutTex();
 
 	@Source(value = { "texture.png" })
 	ImageResource texture();

@@ -67,6 +67,7 @@ public abstract class AbstractGwtProcDemo extends FlexTable {
 			}
 		};
 //		timer.scheduleRepeating(20);
+//		timer.scheduleRepeating(1);
 		timer.scheduleRepeating(10);
 
 	}

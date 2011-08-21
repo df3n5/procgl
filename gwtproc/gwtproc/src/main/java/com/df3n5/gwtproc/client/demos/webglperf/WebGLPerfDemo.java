@@ -1,6 +1,8 @@
 package com.df3n5.gwtproc.client.demos.webglperf;
 
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.google.gwt.core.client.GWT.log;
 
@@ -47,9 +49,14 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 	private int angleY;
 	private int angleZ;
 	private WebGLBuffer vertexTextureCoordBuffer;
+	private Date currentTime;
+	private Date lastTime;
 	
-	private final int SUBDIVISION_LEVEL = 2; 
+	private final int SUBDIVISION_LEVEL = 2000;
+	private final boolean isWithTex = true;
 
+    Logger perfLogger = Logger.getLogger("WebGLPerfDemo Logger");
+	
 	public WebGLPerfDemo() {
 		super();
 		getFlexCellFormatter().setColSpan(2, 0, 2);
@@ -63,6 +70,7 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 		
 		translateZ = -2.0f;
  
+		currentTime = new Date();
 		//Start
 		/*
 		super.start();
@@ -81,7 +89,9 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 		initParams();
 		initShaders();
 		initBuffers();
-		initTexture();
+		if(isWithTex){
+			initTexture();
+		}
 		initControls();
 	}
 	
@@ -143,11 +153,21 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 	 */
 	private void initShaders() {
 		// Create the Shaders
-		WebGLShader fragmentShader = getShader(WebGLRenderingContext.FRAGMENT_SHADER, Resources.INSTANCE.fragmentShader().getText());
-		log("Created fragment shader");
+		WebGLShader fragmentShader = null;
+		WebGLShader vertexShader = null;
+		if(isWithTex) {
+			fragmentShader = getShader(WebGLRenderingContext.FRAGMENT_SHADER, Resources.INSTANCE.fragmentShaderWithTex().getText());
+			log("Created fragment shader");
 		
-		WebGLShader vertexShader = getShader(WebGLRenderingContext.VERTEX_SHADER, Resources.INSTANCE.vertexShader().getText());
-		log("Created vertex shader");
+			vertexShader = getShader(WebGLRenderingContext.VERTEX_SHADER, Resources.INSTANCE.vertexShaderWithTex().getText());
+			log("Created vertex shader");
+		}else{
+			fragmentShader = getShader(WebGLRenderingContext.FRAGMENT_SHADER, Resources.INSTANCE.fragmentShaderWithoutTex().getText());
+			log("Created fragment shader");
+		
+			vertexShader = getShader(WebGLRenderingContext.VERTEX_SHADER, Resources.INSTANCE.vertexShaderWithoutTex().getText());
+			log("Created vertex shader");
+		}
 		if (vertexShader == null || fragmentShader == null) {
 			log("Shader error");
 			throw new RuntimeException("shader error");
@@ -186,15 +206,19 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 		vertexPositionAttribute = glContext.getAttribLocation(shaderProgram, "vertexPosition");
 		glContext.enableVertexAttribArray(vertexPositionAttribute);
 		
-		textureCoordAttribute = glContext.getAttribLocation(shaderProgram, "texPosition");
-	    glContext.enableVertexAttribArray(textureCoordAttribute);
+
 
 		// get the position of the projectionMatrix uniform.
 		projectionMatrixUniform = glContext.getUniformLocation(shaderProgram,
 				"projectionMatrix");
 		
-		// get the position of the tex uniform.
-		textureUniform = glContext.getUniformLocation(shaderProgram, "tex");
+		if(isWithTex) {
+			textureCoordAttribute = glContext.getAttribLocation(shaderProgram, "texPosition");
+			glContext.enableVertexAttribArray(textureCoordAttribute);
+	    
+			// get the position of the tex uniform.
+			textureUniform = glContext.getUniformLocation(shaderProgram, "tex");
+		}
 		
 		checkErrors();
 	}
@@ -223,29 +247,146 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 
 	}
 
+	//Helper function to get index for a 1D array as if it were a 2D array
+	int idx(int i, int j, int size)
+	{
+	    return (i + (size * j));
+	}
+	
 	/**
 	 * Initializes the buffers for vertex coordinates, normals and texture
 	 * coordinates.
 	 */
 	private void initBuffers() {
-		/*
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
-		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
-				Float32Array.create(cube.getVertices()),
-				WebGLRenderingContext.STATIC_DRAW);
-		vertexTextureCoordBuffer = glContext.createBuffer();
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
-		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, Float32Array.create(cube.getTexCoords()), WebGLRenderingContext.STATIC_DRAW);
-		*/
-		float halfSize = 1.0f;
+		float halfSize = 10000.0f;
 		float newHalfSize = halfSize / SUBDIVISION_LEVEL;
-		
+		float squareSide = newHalfSize * 2.0f;
+		float z = -1.0f;
+		/*
 		float[] vertices = new float[]{
 				// Front face
 				-1.0f, -1.0f,  -1.0f,
 				1.0f, -1.0f,  -1.0f,
 				1.0f,  1.0f,  -1.0f,
 				-1.0f,  1.0f,  -1.0f,
+		};
+		*/
+		
+		//Non-element-array method (Wasteful method)
+		//------------------------------
+		int numSquares = SUBDIVISION_LEVEL*SUBDIVISION_LEVEL;
+		int numTriangles = numSquares * 2;
+		int numVerticesPerRow = SUBDIVISION_LEVEL * 2 * 9;//9=3*3 is number of vertices in triangle * x,y,z of vertex
+		float[] vertices = new float[numTriangles * 9]; //9=3*3 is number of vertices in triangle * x,y,z of vertex
+		
+		System.out.println("numSquares : " + numSquares);
+		System.out.println("numTriangles * 3 : " + numTriangles * 9); //9=3*3 is number of vertices in triangle * x,y,z of vertex
+		
+		//Loop through squares, each loop iteration makes one square
+		for(int i = 0 ; i < SUBDIVISION_LEVEL ; i++) {
+			for(int j = 0 ; j < SUBDIVISION_LEVEL ; j++) {
+		    
+			    int newI = i * 18;
+				int baseIdx = idx(newI,j,numVerticesPerRow);
+				float iBySquareSide = i*squareSide;
+				float iPlus1BySquareSide = (i+1)*squareSide;
+
+				float jBySquareSide = j*squareSide;
+				float jPlus1BySquareSide = (j+1)*squareSide;
+
+			    //tri1
+			    //p1
+			    vertices[baseIdx++] = iBySquareSide;
+			    vertices[baseIdx++] = jPlus1BySquareSide;
+			    vertices[baseIdx++] = z; 
+			    
+			    //p2
+			    vertices[baseIdx++] = iBySquareSide; 
+			    vertices[baseIdx++] = jBySquareSide; 
+			    vertices[baseIdx++] = z;
+			    
+			    //p4
+			    vertices[baseIdx++] = iPlus1BySquareSide; 
+			    vertices[baseIdx++] = jBySquareSide; 
+			    vertices[baseIdx++] = z;
+			    
+			    //tri2
+			    //p1
+			    vertices[baseIdx++] = iBySquareSide;
+			    vertices[baseIdx++] = jPlus1BySquareSide;
+			    vertices[baseIdx++] = z; 
+			    
+			    //p3
+			    vertices[baseIdx++] = iPlus1BySquareSide;
+			    vertices[baseIdx++] = jPlus1BySquareSide;
+			    vertices[baseIdx++] = z; 
+			    
+			    //p4
+			    vertices[baseIdx++] = iPlus1BySquareSide; 
+			    vertices[baseIdx++] = jBySquareSide; 
+			    vertices[baseIdx++] = z;
+			}
+		}
+		
+		//BEGIN debug
+		/*
+		for(int i=0 ; i<numTriangles * 9;i++) {
+			System.out.println("x is : " + vertices[i++]);
+			System.out.println("y is : " + vertices[i++]);
+			System.out.println("z is : " + vertices[i]);
+		}
+		*/
+		//END debug
+		
+		vertexBuffer = glContext.createBuffer();
+		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
+		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER,
+				Float32Array.create(vertices),
+				WebGLRenderingContext.STATIC_DRAW);
+		
+		if(isWithTex) {
+			//Tex coords:
+			float[] texCoords = new float[numTriangles * 6]; //6=3*2
+			for(int i = 0 ; i < numSquares ;i++) {
+				int tempI = 0;
+				int squareOffset = i * 12;
+				
+				texCoords[squareOffset + tempI++] = -1.0f;
+				texCoords[squareOffset + tempI++] = 1.0f;  //p1
+				
+				texCoords[squareOffset + tempI++] = -1.0f;
+				texCoords[squareOffset + tempI++] = -1.0f;  //p2
+				
+				texCoords[squareOffset + tempI++] = 1.0f;
+				texCoords[squareOffset + tempI++] = -1.0f;  //p4
+				
+				texCoords[squareOffset + tempI++] = -1.0f;
+				texCoords[squareOffset + tempI++] = 1.0f;  //p1
+				
+				texCoords[squareOffset + tempI++] = 1.0f;
+				texCoords[squareOffset + tempI++] = 1.0f;  //p3
+				
+				texCoords[squareOffset + tempI++] = 1.0f;
+				texCoords[squareOffset + tempI++] = -1.0f;  //p4
+			}
+			vertexTextureCoordBuffer = glContext.createBuffer();
+			glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
+			glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
+					Float32Array.create(texCoords), 
+					WebGLRenderingContext.STATIC_DRAW);
+		}
+		//------------------------------
+		
+		
+		//Element-array method (good method?)
+		//------------------------------
+		/*
+		float[] vertices = new float[]{
+				// Front face
+				-newHalfSize, -newHalfSize,  -newHalfSize,
+				newHalfSize, -newHalfSize,  -newHalfSize,
+				newHalfSize,  newHalfSize,  -newHalfSize,
+				-newHalfSize,  newHalfSize,  -newHalfSize,
 		};
 
 		vertexBuffer = glContext.createBuffer();
@@ -278,28 +419,37 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 		glContext.bufferData(WebGLRenderingContext.ARRAY_BUFFER, 
 				Float32Array.create(texCoords), 
 				WebGLRenderingContext.STATIC_DRAW);
+		*/
+		//------------------------------
 		
 		checkErrors();
 	}
 
 	@Override
 	protected void draw() {
+		lastTime = currentTime;
+		currentTime = new Date();
+		//System.out.println((currentTime.getTime() - lastTime.getTime()));
+		perfLogger.log(Level.INFO, Long.toString(currentTime.getTime() - lastTime.getTime()));
+		
 		angleX = (angleX + 1) % 360;
 		angleY = (angleY + 1) % 360;
-		// angleZ=(angleZ+2)%360;
+		//angleZ=(angleZ+2)%360;
 
 		glContext.clear(WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT);
-
-		/*
+		
+		//Non-element-array method (Wasteful method)
+		//------------------------------
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3,
 				WebGLRenderingContext.FLOAT, false, 0, 0);
-		 */
-		/*
 		// Load the vertex data
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-		*/
+		//------------------------------
 
+		//Element-array method (good method?)
+		//------------------------------
+		/*
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexBuffer);
 	    glContext.bindBuffer(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, 
 			  verticesIndexBuffer);
@@ -309,11 +459,21 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 				false, 
 				0, 
 				0);
-		
-		// Load the texture coordinates data
-		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
-		glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+				*/
+		//------------------------------
+		if(isWithTex){
+			// Load the texture coordinates data
+			glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, vertexTextureCoordBuffer);
+			glContext.vertexAttribPointer(textureCoordAttribute, 2, WebGLRenderingContext.FLOAT, false, 0, 0);
+			
+			// Bind the texture to texture unit 0
+			glContext.activeTexture(WebGLRenderingContext.TEXTURE0);
+			glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture);
 
+			// Point the uniform sampler to texture unit 0
+			glContext.uniform1i(textureUniform, 0);
+		}
+		
 		perspectiveMatrix = MatrixUtil.createPerspectiveMatrix(45, 1.0f, 0.1f, 100);
 		translationMatrix = MatrixUtil.createTranslationMatrix(0, 0, translateZ);
 		rotationMatrix = MatrixUtil.createRotationMatrix(angleX, angleY, angleZ);
@@ -321,19 +481,21 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 
 		glContext.uniformMatrix4fv(projectionMatrixUniform, false, resultingMatrix.getColumnWiseFlatData());
 		
-		// Bind the texture to texture unit 0
-		glContext.activeTexture(WebGLRenderingContext.TEXTURE0);
-		glContext.bindTexture(WebGLRenderingContext.TEXTURE_2D, texture);
-
-		// Point the uniform sampler to texture unit 0
-		glContext.uniform1i(textureUniform, 0);
+		//Non-element-array method (Wasteful method)
+		//------------------------------
+		//glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, 64);
+		glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, SUBDIVISION_LEVEL*SUBDIVISION_LEVEL*6);
+		//------------------------------
 		
-		
-		//glContext.drawArrays(WebGLRenderingContext.TRIANGLES, 0, 6);
+		//Element-array method (good method?)
+		//------------------------------
+		/*
 		glContext.drawElements(WebGLRenderingContext.TRIANGLES, 
 				6, 
 				WebGLRenderingContext.UNSIGNED_SHORT, 
 				0);
+				*/
+		//------------------------------
 		glContext.flush();
 		checkErrors();
 	}

@@ -191,6 +191,32 @@ class Point2 {
   }
 }
 
+class Cuboid {
+  float x;
+  float y;
+  float z;
+  float depth;
+  float ht;
+  float len;
+
+  Cuboid(float x, float y, float z, 
+      float depth, float ht, float len) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.depth = depth;
+    this.ht = ht;
+    this.len = len;
+  }
+
+  public float getX() { return x; }
+  public float getY() { return y; }
+  public float getZ() { return z; }
+  public float getDepth() { return depth; }
+  public float getHeight() { return ht; }
+  public float getLength() { return len; }
+}
+
 abstract class Entity {
   protected int type;
   protected float x, y;
@@ -383,7 +409,7 @@ abstract class Entity {
     res.add(new Point2(x2,y1));
     res.add(new Point2(x2,y2));
 
-    return res;
+   return res;
   }
 
   //For plain wall (no windows)
@@ -443,6 +469,103 @@ abstract class Entity {
     }
     return res;
   }
+
+  protected ArrayList<Triangle> getTrianglesFromCuboid(Cuboid cuboid) {
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+
+    //1
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX(), 
+          cuboid.getY(), 
+          cuboid.getZ(),
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY() + cuboid.getHeight(),
+          cuboid.getZ() ));
+
+    //2
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY(), 
+          cuboid.getZ(),
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY() + cuboid.getHeight(),
+          cuboid.getZ() + cuboid.getLength()));
+
+    //3
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY(), 
+          cuboid.getZ() + cuboid.getLength(),
+          cuboid.getX(),
+          cuboid.getY() + cuboid.getHeight(),
+          cuboid.getZ() + cuboid.getLength()));
+
+    //4
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX(),
+          cuboid.getY(), 
+          cuboid.getZ() + cuboid.getLength(),
+          cuboid.getX(),
+          cuboid.getY() + cuboid.getHeight(),
+          cuboid.getZ()));
+
+    //5
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX(),
+          cuboid.getY() + cuboid.getHeight(), 
+          cuboid.getZ(),
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY() + cuboid.getHeight(),
+          cuboid.getZ() + cuboid.getLength()));
+
+    //6
+    res.addAll( getTrianglesFromSquare(
+          cuboid.getX(),
+          cuboid.getY(), 
+          cuboid.getZ(),
+          cuboid.getX() + cuboid.getDepth(),
+          cuboid.getY(),
+          cuboid.getZ() + cuboid.getLength()));
+
+    return res;
+  }
+
+
+  protected ArrayList<Triangle> generateTrianglesFromCuboids(ArrayList<Cuboid> cuboids) {
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
+    for(Cuboid cuboid : cuboids) {
+      res.addAll(getTrianglesFromCuboid(cuboid));       
+    }
+    return res;
+  }
+
+  protected ArrayList<Point2> getTexCoordsFromCuboid(Cuboid cuboid) {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+    float x1 = 0.0;
+    float y1 = 0.0;
+    float x2 = 1.0;
+    float y2 = 1.0;
+
+    for(int i = 0 ; i < 6 ; i++) {
+      //Ignore windows
+      res.add(new Point2(x1,y1));
+      res.add(new Point2(x1,y2));
+      res.add(new Point2(x2,y2));
+
+      res.add(new Point2(x1,y1));
+      res.add(new Point2(x2,y1));
+      res.add(new Point2(x2,y2));
+    }
+    return res;
+  }
+
+  protected ArrayList<Point2> generateTexCoordsFromCuboids(ArrayList<Cuboid> cuboids) {
+    ArrayList<Point2> res = new ArrayList<Point2>();
+    for(Cuboid cuboid : cuboids) {
+      res.addAll(getTexCoordsFromCuboid(cuboid));       
+    }
+    return res;
+  }
 }
 
 class Window{
@@ -465,9 +588,9 @@ class Window{
 }
 
 class Room extends Entity {
-  private int wt, ht; //Width and height
-  private float lowY, highY; //Y for floor and ceiling
-  private ArrayList<Window> windows; // = new int[0];
+  protected int wt, ht; //Width and height
+  protected float lowY, highY; //Y for floor and ceiling
+  protected ArrayList<Window> windows; // = new int[0];
 
   public Room(int x, int y, int wt, int ht, float lowY, float highY) {
     super(Entity.ROOM_TYPE, x, y);
@@ -543,13 +666,13 @@ class Room extends Entity {
    
     switch(window.getWallN()) {
       case 0:
-        return extrudeLineSegTo3DWithWindow(window, x,y, x+wt,y, lowY, highY);
+        return extrudeLineSegTo3DWithWindow(window, x,y+ht, x+wt,y+ht, lowY, highY);
       case 1:
-        return extrudeLineSegTo3DWithWindow(window, x,y, x,y+ht, lowY, highY);
+        return extrudeLineSegTo3DWithWindow(window, x,y, x+wt,y, lowY, highY);
       case 2:
         return extrudeLineSegTo3DWithWindow(window, x+wt,y, x+wt,y+ht, lowY, highY); 
       case 3:
-        return extrudeLineSegTo3DWithWindow(window, x,y+ht, x+wt,y+ht, lowY, highY);
+        return extrudeLineSegTo3DWithWindow(window, x,y, x,y+ht, lowY, highY);
       default:
         return null;
     }
@@ -618,9 +741,9 @@ class Room extends Entity {
   public ArrayList<Vector3> extrudeWallWithWindowsOrDoorsNormals(Window window, float lowY, float highY) {
     switch(window.getWallN()) {
       case 0:
-        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x+wt,y, lowY, highY);
-      case 1:
         return extrudeLineSegTo3DWithWindowNormals(window, x,y, x,y+ht, lowY, highY);
+      case 1:
+        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x+wt,y, lowY, highY);
       case 2:
         return extrudeLineSegTo3DWithWindowNormals(window, x+wt,y, x+wt,y+ht, lowY, highY); 
       case 3:
@@ -772,6 +895,149 @@ class Room extends Entity {
   }
 }
 
+class CuboidRoom extends Room {
+  protected ArrayList<Cuboid> cuboids;
+  protected float wallWidth;
+
+  public CuboidRoom(int x, int y, int wt, int ht, float lowY, float highY, float wallWidth) {
+    super(x, y, wt, ht, lowY, highY);
+    this.wallWidth = wallWidth;
+  }
+
+  protected void generateGeom() {
+    generateCuboids();
+    generateTriangles();
+    generateNormals();
+    generateTexCoords();
+  }
+
+  protected ArrayList<Cuboid> getCuboidsForWallWithWindow(
+      Window window,
+      float x, float y, float z,
+      float depth, float ht, float len) {
+    //TODO
+    ArrayList<Cuboid> res = new ArrayList<Cuboid>();
+
+    float angle;
+    boolean depthGreatest = (depth>len);
+
+    if(depthGreatest) {
+      float x1 = x;
+      float x2 = x+depth;
+      float z1 = z;
+      float z2 = z;
+      angle = atan2((z2-z1), (x2-x1));
+    } else {
+      float x1 = x;
+      float x2 = x;
+      float z1 = z;
+      float z2 = z+len;
+      angle = atan2((z2-z1), (x2-x1));
+    }
+
+    float relWindowX = (window.getStartPoint().getX()*cos(angle));
+    float relWindowZ = (window.getStartPoint().getX()*sin(angle));
+
+    float relWindowXPlusSpanX = (relWindowX+(window.getWindowSpan().getX()*cos(angle)));
+    float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
+
+    float relWindowYTop = window.getStartPoint().getY() + window.getWindowSpan().getY();
+    float relWindowYBottom = window.getWindowSpan().getY();
+
+    if(depthGreatest) {
+      //Since depth greatest, we are going along x axis, so no need to care about z
+      res.add(new Cuboid(x,y,z, 
+            relWindowX, ht, len)); //Leftmost
+
+      res.add(new Cuboid(x+relWindowX,y+relWindowYTop,z, 
+            window.getWindowSpan().getX(), ht-relWindowYTop, len)); //Above Window
+
+      res.add(new Cuboid(x+relWindowX,y,z, 
+            window.getWindowSpan().getX(), relWindowYBottom, len)); //Below Window
+
+      res.add(new Cuboid(x+relWindowXPlusSpanX,y,z, 
+            depth-relWindowXPlusSpanX, ht, len)); //Right of window
+    } else {
+      //Since len greatest, we are going along z axis, so no need to care about x
+      res.add(new Cuboid(x,y,z, 
+            depth, ht, relWindowZ)); //Leftmost
+
+      res.add(new Cuboid(x,y+relWindowYTop,z+relWindowZ, 
+            depth, ht-relWindowYTop, window.getWindowSpan().getX())); //Above Window
+
+      res.add(new Cuboid(x,y,z+relWindowZ, 
+            depth, relWindowYBottom, window.getWindowSpan().getX())); //Below Window
+
+      res.add(new Cuboid(x,y,z+relWindowZPlusSpanZ, 
+            depth, ht, len-relWindowZPlusSpanZ)); //Right of window
+    }
+
+    return res;
+  }
+
+  protected ArrayList<Cuboid> getCuboidForWall(int wallN,
+      float x, float y, float z,
+      float depth, float ht, float len) {
+    ArrayList<Cuboid> res = new ArrayList<Cuboid>();
+
+    boolean extruded = false;
+    for(int i=0 ; i < windows.size() ; i++) {
+      if(wallN == windows.get(i).getWallN()) {
+        res.addAll(getCuboidsForWallWithWindow(windows.get(i), 
+              x,y,z,
+              depth,ht,len));
+        extruded = true;
+      }
+    }
+
+    if(! extruded) {
+      res.add(new Cuboid(x,y,z,depth,ht,len));
+    }
+
+    return res;
+  }
+
+  protected void generateCuboids() {
+    cuboids = new ArrayList<Cuboid>();
+
+    float roomHeight = highY - lowY;
+
+    //alpha
+    cuboids.addAll(getCuboidForWall(0, 
+          x,lowY,y, 
+          wallWidth,roomHeight,ht));
+
+    //beta
+    cuboids.addAll(getCuboidForWall(1,
+        x,lowY,y, 
+        wt,roomHeight,wallWidth));
+
+    //gamma
+    cuboids.addAll(getCuboidForWall(2,
+        x+wt-wallWidth,lowY,y, 
+        wallWidth,roomHeight,ht));
+
+    //delta
+    cuboids.addAll(getCuboidForWall(3,
+        x,lowY,y+ht-wallWidth, 
+        wt,roomHeight,wallWidth));
+  }
+
+
+  protected void generateTriangles() {
+    this.triangles = generateTrianglesFromCuboids(cuboids);
+  }
+
+  protected void generateNormals() {
+    this.normals = generateNormalsFromTriangles();
+  }
+
+  protected void generateTexCoords() {
+    this.texCoords = generateTexCoordsFromCuboids(cuboids);
+  }
+}
+ 
+
 class Plane extends Entity {
   int xMin, zMin, xMax, zMax, y;
 
@@ -900,7 +1166,6 @@ class Pillar extends Entity {
 
     float amount = 6.0;
     for (int i=0; i < numSlices; i++) {
-      // TODO:Verify this is correct.
       res.add(new Point2(0,amount));
       res.add(new Point2(0,0));
       res.add(new Point2(amount,0));
@@ -923,7 +1188,8 @@ class GameLogic extends GameEventListener{
 
   //Factory method
   public void createRoom(int x, int y, int w, int h) {
-    Room room = new Room(x,y,w,h, 0.0f, 2.0f);
+    //Room room = new Room(x,y,w,h, 0.0f, 2.0f);
+    Room room = new CuboidRoom(x,y,w,h, 0.0f, 2.0f, 1.0f);
     room.addWindow(0, new Point2(0.3, 0.6), new Point2(0.5,0.5) );
     //room.addDoor(0, 3, 6);
     entities.add(room);

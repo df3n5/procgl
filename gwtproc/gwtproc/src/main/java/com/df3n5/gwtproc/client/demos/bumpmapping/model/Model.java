@@ -159,17 +159,32 @@ public class Model {
 	 * @param glContext
 	 */
 	public void setUniforms(WebGLRenderingContext glContext, boolean isProc) {
-		switch(type) {
-			case Model.WALL_TYPE:
-				break;
-			case Model.FLOOR_TYPE:
-				break;
-			case Model.CEILING_TYPE:
-				break;
-			case Model.PILLAR_TYPE:
-				break;
-			case Model.SKYBOX_TYPE:
-				break;
+		if(isProc) {
+			switch(type) {
+				case Model.WALL_TYPE:
+					break;
+				case Model.FLOOR_TYPE:
+					break;
+				case Model.CEILING_TYPE:
+					break;
+				case Model.PILLAR_TYPE:
+					break;
+				case Model.SKYBOX_TYPE:
+					break;
+			}
+		}else{
+			switch(type) {
+				case Model.WALL_TYPE:
+					break;
+				case Model.FLOOR_TYPE:
+					break;
+				case Model.CEILING_TYPE:
+					break;
+				case Model.PILLAR_TYPE:
+					break;
+				case Model.SKYBOX_TYPE:
+					break;
+		}
 		}
 	}
 	
@@ -195,7 +210,26 @@ public class Model {
 	 * Set attributes on a per model basis
 	 */
 	public void setAttribs(WebGLRenderingContext glContext, boolean isProc) {
-	    switch(type) {
+		if(isProc) {
+		    switch(type) {
+			    case Model.WALL_TYPE:
+			    	break;
+			    case Model.FLOOR_TYPE:
+			    	break;
+			    case Model.CEILING_TYPE:
+			    	break;
+			    case Model.PILLAR_TYPE:
+			    	int normalAttribute = glContext.getAttribLocation(
+			    			getShaderProgram(glContext, isProc), "aNormal");
+			    	glContext.enableVertexAttribArray(normalAttribute);
+					glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, getNormalBuffer());
+					glContext.vertexAttribPointer(normalAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+			    	break;
+			    case Model.SKYBOX_TYPE:
+			    	break;
+		    }
+		}else{
+		    switch(type) {
 		    case Model.WALL_TYPE:
 		    	break;
 		    case Model.FLOOR_TYPE:
@@ -212,6 +246,7 @@ public class Model {
 		    case Model.SKYBOX_TYPE:
 		    	break;
 	    }
+		}
 	}
 	
 	public WebGLProgram getShaderProgram(WebGLRenderingContext glContext, boolean isProc) {

@@ -5,6 +5,8 @@
 
   <inherits name='com.googlecode.gwtgl.binding'/>
 
+  <inherits name="com.google.gwt.logging.Logging"/>
+
   <!-- We need the JUnit module in the main module,               -->
   <!-- otherwise eclipse complains (Google plugin bug?)           -->
   <inherits name='com.google.gwt.junit.JUnit' />
