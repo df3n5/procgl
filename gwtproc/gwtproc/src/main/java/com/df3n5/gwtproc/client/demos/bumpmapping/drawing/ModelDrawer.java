@@ -141,7 +141,4 @@ public class ModelDrawer {
 	public void endDraw() {
 		glContext.flush();
 	}
-	
-
-
 }

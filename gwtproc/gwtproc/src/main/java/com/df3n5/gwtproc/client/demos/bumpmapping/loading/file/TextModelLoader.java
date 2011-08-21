@@ -97,12 +97,12 @@ public class TextModelLoader extends AbstractModelLoader {
 	}
 	
 	public Model[] getModels() {
-		Model[] models = new Model[5];
+		Model[] models = new Model[3];
 		
 		int i = 0;
 		models[i++] = loadWalls();
-		models[i++] = loadFloor();
-		models[i++] = loadCeiling();
+		//models[i++] = loadFloor();
+		//models[i++] = loadCeiling();
 		models[i++] = loadPillars();
 		models[i++] = loadSkybox();
 

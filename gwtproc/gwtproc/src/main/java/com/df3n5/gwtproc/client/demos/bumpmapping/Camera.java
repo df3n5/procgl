@@ -40,7 +40,8 @@ public class Camera implements MouseMoveHandler,
 	public Camera() {
 		currentlyPressedKeys = new boolean[255]; //TODO: Is this high enough?
 		xPos = 0.0f;
-		yPos = 0.4f;
+		//yPos = 0.4f;
+		yPos = 3.4f;
 		zPos = 0.0f;
 	}
 	

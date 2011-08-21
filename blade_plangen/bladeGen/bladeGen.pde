@@ -139,6 +139,21 @@ class Vector3 {
     float z = this.z - other.getZ();
     return new Vector3(x,y,z);
   }
+
+  public float magnitude() {
+    return sqrt(x*x + y*y + z*z);
+  }
+
+  public Vector3 normalize() throws Exception{
+    float mag = magnitude();
+    if(mag > 0)
+    {
+      float invMag = 1.0f/mag;
+      return new Vector3(invMag*x, invMag*y, invMag*z);
+    } else {
+      throw new Exception("Vector cannot have a mag 0 and have a normal");
+    }
+  }
 }
 
 class Triangle {
@@ -240,8 +255,6 @@ abstract class Entity {
 
   protected abstract void generateTriangles();
 
-  protected abstract void generateNormals();
-
   protected abstract void generateTexCoords();
 
   //Only to be called by "toString()"
@@ -333,57 +346,13 @@ abstract class Entity {
     return res;
   }
 
-  public ArrayList<Vector3> getNormalsFromSquare(float x1, float y1,float z1,
+  public ArrayList<Triangle> getTrianglesFromSquareHor(float x1, float y1,float z1,
       float x2, float y2, float z2) {
-    //Two triangles : 
-    // (x1,y1,z1)   
-    // *k-----<- * (x2,y1,z2)
-    // | \       |
-    // |  \     \/
-    // |   \     |
-    // |    \    |
-    // ^a    \   |
-    // |      \  |
-    // |   b   \ |
-    // *l-->----m* (x2,y2,z2)
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
+    ArrayList<Triangle> res = new ArrayList<Triangle>();
 
-    Vector3 k = new Vector3(x1, y1, z1);
-    Vector3 l = new Vector3(x1, y2, z1);
-    Vector3 m = new Vector3(x2, y2, z2);
-
-    Vector3 a = k.subtract(l);
-    Vector3 b = m.subtract(l);
-
-    Vector3 normal = a.crossProduct(b);
-
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-
+    res.add(new Triangle(x1,y1,z1, x1,y1,z2, x2,y1,z2));
+    res.add(new Triangle(x1,y1,z1, x2, y1, z1, x2,y1,z2));
     return res;
-  }
-  protected ArrayList<Vector3> extrudeLineSegTo3DNormals(
-      float x1, float z1, float x2, 
-      float z2, float lowY, float highY) {
-    //Two triangles : 
-    // (x1,z1)   (x2,z2)
-    // * ------- * highY
-    // | \       |
-    // |  \      |
-    // |   \     |
-    // |    \    |
-    // |     \   |
-    // |      \  |
-    // |       \ |
-    // * ------- * lowY
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-
-    res.addAll(getNormalsFromSquare(x1, highY, z1, x2, lowY, z2));
-    return res; 
   }
 
   public ArrayList<Point2> getTexCoordsFromSquare(float x1, float y1,
@@ -443,20 +412,58 @@ abstract class Entity {
     // |  \   
     // |   \
     // |    \ 
-    // ^a    \ 
+    // ^b    \ 
     // |      \ 
-    // |   b   \ 
+    // |   a   \ 
     // *l-->----m*
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-
     Vector3 k = new Vector3(tri.getX1(), tri.getY1(), tri.getZ1());
     Vector3 l = new Vector3(tri.getX2(), tri.getY2(), tri.getZ2());
     Vector3 m = new Vector3(tri.getX3(), tri.getY3(), tri.getZ3());
 
-    Vector3 a = k.subtract(l);
-    Vector3 b = m.subtract(l);
+    Vector3 a = m.subtract(l);
+    Vector3 b = k.subtract(l);
 
-    return a.crossProduct(b);
+    Vector3 cross = a.crossProduct(b);
+
+    try{
+      Vector3 res = cross.normalize();
+      return res;
+    }catch(Exception e) {
+      System.err.println("Cannot normalize vector, cross is : "
+          + cross.getX() + "," 
+          + cross.getY() + "," 
+          + cross.getZ());
+
+      System.err.println("Type is : " + this.type);
+
+      System.err.println("Cannot normalize vector, a is : "
+          + a.getX() + "," 
+          + a.getY() + "," 
+          + a.getZ());
+
+      System.err.println("Cannot normalize vector, b is : "
+          + b.getX() + "," 
+          + b.getY() + "," 
+          + b.getZ());
+
+      System.err.println("Cannot normalize vector, k is : "
+          + k.getX() + "," 
+          + k.getY() + "," 
+          + k.getZ());
+
+      System.err.println("Cannot normalize vector, l is : "
+          + l.getX() + "," 
+          + l.getY() + "," 
+          + l.getZ());
+
+      System.err.println("Cannot normalize vector, m is : "
+          + m.getX() + "," 
+          + m.getY() + "," 
+          + m.getZ());
+
+      e.printStackTrace();
+      return null;
+    }
   }
 
   protected ArrayList<Vector3> generateNormalsFromTriangles() {
@@ -510,7 +517,7 @@ abstract class Entity {
           cuboid.getZ()));
 
     //5
-    res.addAll( getTrianglesFromSquare(
+    res.addAll( getTrianglesFromSquareHor(
           cuboid.getX(),
           cuboid.getY() + cuboid.getHeight(), 
           cuboid.getZ(),
@@ -519,7 +526,7 @@ abstract class Entity {
           cuboid.getZ() + cuboid.getLength()));
 
     //6
-    res.addAll( getTrianglesFromSquare(
+    res.addAll( getTrianglesFromSquareHor(
           cuboid.getX(),
           cuboid.getY(), 
           cuboid.getZ(),
@@ -529,7 +536,6 @@ abstract class Entity {
 
     return res;
   }
-
 
   protected ArrayList<Triangle> generateTrianglesFromCuboids(ArrayList<Cuboid> cuboids) {
     ArrayList<Triangle> res = new ArrayList<Triangle>();
@@ -565,6 +571,10 @@ abstract class Entity {
       res.addAll(getTexCoordsFromCuboid(cuboid));       
     }
     return res;
+  }
+
+  protected void generateNormals() {
+    this.normals = generateNormalsFromTriangles();
   }
 }
 
@@ -696,97 +706,6 @@ class Room extends Entity {
     return res;
   }
 
-  public ArrayList<Vector3> extrudeLineSegTo3DWithWindowNormals(
-      Window window, 
-      float x1, float z1, float x2, 
-      float z2, float lowY, float highY
-      ) {
-    //Two triangles : 
-    // (x1,z1)                       (x2,z2)
-    // * ---------------------------- * highY
-    // |  |   |                       |
-    // |  |   |  (sx+spanx,sy+spany)  |
-    // |  *---*                       |
-    // |  |EEE|                       |
-    // |  *---*                       |
-    // |(sx,sy)                       |
-    // |  |   |                       |
-    // * ---------------------------- * lowY
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-    float angle = atan2((z2-z1), (x2-x1));
-
-    float relWindowX = (x1+(window.getStartPoint().getX()*cos(angle)));
-    float relWindowZ = (z1+(window.getStartPoint().getX()*sin(angle)));
-
-    float relWindowXPlusSpanX = (relWindowX+(window.getWindowSpan().getX()*cos(angle)));
-    float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
-
-    float windowYTop = lowY + window.getStartPoint().getY() + window.getWindowSpan().getY();
-    float windowYBottom = lowY + window.getWindowSpan().getY();
-
-    res.addAll(getNormalsFromSquare(x1,highY,z1, 
-          relWindowX,lowY,relWindowZ)); //Leftmost
-
-    res.addAll(getNormalsFromSquare(relWindowX,highY,relWindowZ, 
-          relWindowXPlusSpanX, windowYTop, relWindowZPlusSpanZ)); //Above window
-
-    res.addAll(getNormalsFromSquare(relWindowX,windowYBottom,relWindowZ, 
-          relWindowXPlusSpanX, lowY, relWindowZPlusSpanZ)); //Below window
-
-    res.addAll(getNormalsFromSquare(relWindowXPlusSpanX, highY, relWindowZPlusSpanZ,
-          x2,lowY,z2)); //Rightmost
-    return res; 
-  }
-
-  public ArrayList<Vector3> extrudeWallWithWindowsOrDoorsNormals(Window window, float lowY, float highY) {
-    switch(window.getWallN()) {
-      case 0:
-        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x,y+ht, lowY, highY);
-      case 1:
-        return extrudeLineSegTo3DWithWindowNormals(window, x,y, x+wt,y, lowY, highY);
-      case 2:
-        return extrudeLineSegTo3DWithWindowNormals(window, x+wt,y, x+wt,y+ht, lowY, highY); 
-      case 3:
-        return extrudeLineSegTo3DWithWindowNormals(window, x,y+ht, x+wt,y+ht, lowY, highY);
-      default:
-        return null;
-    }
-  }
-
-  public ArrayList<Vector3> extrudeWallFlatNormals(int wallN, float lowY, float highY) {
-    switch(wallN) {
-      case 0:
-        return extrudeLineSegTo3DNormals(x,y, x+wt,y, lowY, highY);
-      case 1:
-        return extrudeLineSegTo3DNormals(x,y, x,y+ht, lowY, highY);
-      case 2:
-        return extrudeLineSegTo3DNormals(x+wt,y, x+wt,y+ht, lowY, highY); 
-      case 3:
-        return extrudeLineSegTo3DNormals(x,y+ht, x+wt,y+ht, lowY, highY);
-      default:
-        return null;
-    }
-  }
-
-  public ArrayList<Vector3> getNormalsForWall(int wallN, float lowY, float highY) {
-    boolean extruded = false;
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-   
-    //Tell whether the window is extruded or not.
-    for(int i=0 ; i < windows.size() ; i++) {
-      if(wallN == windows.get(i).getWallN()) {
-        res.addAll(extrudeWallWithWindowsOrDoorsNormals(windows.get(i), lowY, highY));
-        extruded = true;
-      }
-    }
-
-    if(! extruded) {
-      res.addAll(extrudeWallFlatNormals(wallN, lowY, highY));
-    }
-
-    return res;
-  }
-
   public ArrayList<Point2> extrudeLineSegTo3DWithWindowTexCoords(
       Window window, 
       float x1, float z1, float x2, 
@@ -881,9 +800,6 @@ class Room extends Entity {
     this.triangles = res;
   }
 
-  protected void generateNormals() {
-    this.normals = generateNormalsFromTriangles();
-  }
 
   protected void generateTexCoords() {
     ArrayList<Point2> res = new ArrayList<Point2>();
@@ -1086,28 +1002,6 @@ class Plane extends Entity {
     this.texCoords = res;
   }
 
-  public void generateNormals()
-  {
-    ArrayList<Vector3> res = new ArrayList<Vector3>();
-    Vector3 normal;
-    if(y <= 1.0){
-      normal = new Vector3(0,1,0);
-    }
-    else
-    {
-      normal = new Vector3(0,-1,0);
-    }
-
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-    res.add(normal);
-
-    this.normals = res;
-  }
-
 } //End Plane
 
 
@@ -1189,8 +1083,8 @@ class GameLogic extends GameEventListener{
   //Factory method
   public void createRoom(int x, int y, int w, int h) {
     //Room room = new Room(x,y,w,h, 0.0f, 2.0f);
-    Room room = new CuboidRoom(x,y,w,h, 0.0f, 2.0f, 1.0f);
-    room.addWindow(0, new Point2(0.3, 0.6), new Point2(0.5,0.5) );
+    Room room = new CuboidRoom(x,y,w,h, 0.0f, 2.0f, 0.2f);
+    room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
     //room.addDoor(0, 3, 6);
     entities.add(room);
     GameEventManager.getInstance().addEvent(new AddEntityEvent(room));
