@@ -1,0 +1,376 @@
+/*
+#ifdef GL_ES
+precision highp float;
+#endif
+
+uniform sampler2D tex;
+varying vec2 texCoord;
+void main() {
+	gl_FragColor = texture2D(tex, texCoord);
+}
+*/
+/*
+
+//Newer
+#ifdef GL_ES
+precision highp float;
+#endif
+
+varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+}
+*/
+/*
+
+//XXX:Working
+//Procedurally generated checkboard texture.
+#ifdef GL_ES
+precision highp float;
+#endif
+
+//TODO : Pass in as uniform
+float uFrequency = 2.0;
+vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
+vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+
+varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+	vec2 texCoord = mod(floor(vTextureCoord * float(uFrequency*2.0)), 2.0);
+	float delta = abs(texCoord.x - texCoord.y);
+	
+	gl_FragColor = mix(uColor1, uColor0, delta);
+}
+*/
+/*
+//Procedurally generated AA checkboard texture.
+#ifdef GL_ES
+precision highp float;
+#endif
+
+//TODO : Pass in as uniform
+float uFrequency = 2.0;
+vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
+vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+
+varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+	vec4 color;
+	vec2 st_width;
+	vec2 fuzz;
+	vec2 check_pos;
+	float fuzz_max;
+	
+	//calc the filter width
+	//st_width = fwidth(vTextureCoord);
+	st_width.s = fwidth(vTextureCoord.s);
+	st_width.t = fwidth(vTextureCoord.t);
+	fuzz = st_width * uFrequency * 2.0;
+	fuzz_max = max(fuzz.s, fuzz.t);
+	
+	//get the place in the pattern where we are sampling
+	check_pos = fract(vTextureCoord * uFrequency);
+	
+	if( fuzz_max <= 0.5 )
+	{
+		//if the filter width is small enough, compute the pattern
+		// color by performing a smooth interpolation between the 
+		// computed color and the average color
+		
+		vec2 p = smoothstep( vec2(0.5), fuzz + vec2(0.5), check_pos)
+		+ (1.0 - smoothstep(vec2(0.0), fuzz, check_pos));
+		
+		//XXX: Assigning twice? This is MADNESS!
+		color = mix(uColor0, uColor1,
+			p.x * p.y + (1.0 - p.x) * (1.0 - p.y));
+		color = mix(color, (uColor0 + uColor1)/2.0,
+			smoothstep(0.125,0.5, fuzz_max));
+	}
+	else
+	{
+		//filter is too wide. just use the average color.
+		color = (uColor0 + uColor1)/2.0;
+	}
+	
+	gl_FragColor = color;
+}
+*/
+/*
+#extension GL_OES_standard_derivatives : enable
+
+precision highp float;
+
+float uFrequency = 2.0;
+vec4 uColor0 = vec4(0.0,0.0,0.0,1.0);
+vec4 uColor1 = vec4(1.0,1.0,1.0,1.0);
+
+varying vec2    vTextureCoord;
+
+void
+main()
+{
+   vec4   color;
+   vec2   st_width;
+   vec2   fuzz;
+   vec2   pmod;
+   float  fuzz_max;
+   
+   // determine the filter width
+   st_width = fwidth(vTextureCoord);
+   
+   // calculate the fuzziness taking normal into account
+   fuzz = st_width * float(uFrequency) * 2.0;
+ 
+   fuzz_max = max(fuzz.s, fuzz.t);
+   
+   // calculate position in the checkerboard pattern
+   pmod = fract(vTextureCoord * float(uFrequency));
+   
+   // if the filter width is small enough, compute the pattern color
+   if (fuzz_max <= 0.5)
+   {
+      vec2   p = smoothstep(vec2(0.5), fuzz + vec2(0.5), pmod) + (1.0 - smoothstep(vec2(0.0), fuzz, pmod));
+      
+      color = mix(uColor0, uColor1, p.x * p.y + (1.0 - p.x) * (1.0 - p.y));
+      
+      // gradually fade in the average color when we get close to the limit
+      color = mix(color, (uColor0 + uColor1)/2.0, smoothstep(0.125, 0.5, fuzz_max));
+   }
+   else
+   {
+      // otherwise, use only the average color
+      color = (uColor0 + uColor1)/2.0;
+   }
+   
+   gl_FragColor = color;
+}
+*/
+/*
+//Per frag lighting
+precision mediump float;
+
+uniform vec4 uAmbient;
+uniform vec4 uSpecular;
+uniform vec4 uDiffuse;
+uniform float uSpecularPower;
+
+uniform sampler2D sBaseMap;
+uniform sampler2D sBumpMap;
+
+varying vec2 vTexCoord;
+varying vec3 vViewDirection;
+varying vec3 vLightDirection;
+
+void main( void )
+{
+   // Fetch basemap color
+   vec4 baseColor = texture2D( sBaseMap, vTexCoord );
+   
+   // Fetch the tangent space normal from normal map
+   vec3 normal = texture2D( sBumpMap, vTexCoord ).xyz;
+   
+   // Scale and bias from [0, 1] to [-1, 1] and normalize
+   normal = normalize( normal * 2.0 - 1.0 );
+   
+   // Normalize the light direction and view direction
+   vec3 lightDirection = normalize( vLightDirection );
+   vec3 viewDirection = normalize( vViewDirection );
+   
+   // Compute N.L
+   float nDotL = dot( normal, lightDirection );
+   
+   // Compute reflection vector
+   vec3 reflection = ( 2.0 * normal * nDotL ) - lightDirection;
+   
+   // Compute R.V
+   float rDotV = max( 0.0, dot( reflection, viewDirection ) );
+   
+   // Compute Ambient term
+   vec4 ambient = uAmbient * baseColor;
+   
+   // Compute Diffuse term
+   vec4 diffuse = uDiffuse * nDotL * baseColor;
+   
+   // Compute Specular term
+   vec4 specular = uSpecular * pow( rDotV, uSpecularPower );
+   
+   // Output final color
+   gl_FragColor = ambient + diffuse + specular;     
+}
+*/
+
+
+//XXX:No idea if this will work...
+precision mediump float;
+
+uniform vec4 uAmbient;
+uniform vec4 uSpecular;
+uniform vec4 uDiffuse;
+uniform float uSpecularPower;
+
+uniform sampler2D sBaseMap;
+uniform sampler2D sBumpMap;
+
+varying vec2 vTexCoord;
+varying vec3 vViewDirection;
+varying vec3 vLightDirection;
+
+//uniform float time; // Used for texture animation
+float time = 0.1; // Used for texture animation
+
+//varying vec4 vColor = vec4(1.0,1.0,1.0,1.0);
+vec4 vColor = vec4(1.0,1.0,1.0,1.0);
+
+#define ONE 0.00390625
+#define ONEHALF 0.001953125
+// The numbers above are 1/256 and 0.5/256, change accordingly
+// if you change the code to use another perm/grad texture size.
+
+
+float fade(const in float t) {
+  // return t*t*(3.0-2.0*t); // Old fade, yields discontinuous second derivative
+  return t*t*t*(t*(t*6.0-15.0)+10.0); // Improved fade, yields C2-continuous noise
+}
+
+float noise_new(const in vec2 P)
+{
+//  ivec2 Pi = ivec2(floor(P)); // Integer part for permutation
+  vec2 Pi = vec2(floor(P)); // Integer part for permutation
+  vec2 Pf = fract(P); // Fractional part for interpolation
+
+  //  const int perm[] = int[32](0,8,2,3,23,22,13,28,30,19,1,6,26,10,9,15,14,24,31,27,16,21,20,5,17,29,18,11,12,4,7,25);
+/*
+  int perm[32];
+  perm[0] = 0;
+  perm[1] = 8;
+  perm[2] = 2;
+  perm[3] = 3;
+  perm[4] = 23;
+  perm[5] = 22;
+  perm[6] = 13;
+  perm[7] = 28;
+  perm[8] = 30;
+  perm[9] = 19;
+  perm[10] = 1;
+  perm[11] = 6;
+  perm[12] = 26;
+  perm[13] = 10;
+  perm[14] = 9;
+  perm[15] = 15;
+  perm[16] = 14;
+  perm[17] = 24;
+  perm[18] = 31;
+  perm[19] = 27;
+  perm[20] = 16;
+  perm[21] = 21;
+  perm[22] = 20;
+  perm[23] = 5;
+  perm[24] = 17;
+  perm[25] = 29;
+  perm[26] = 18;
+  perm[27] = 11;
+  perm[28] = 12;
+  perm[29] = 4;
+  perm[30] = 7;
+  perm[31] = 25;
+*/
+  float perm[32];
+  perm[0] = 0.0;
+  perm[1] = 8.0;
+  perm[2] = 2.0;
+  perm[3] = 3.0;
+  perm[4] = 23.0;
+  perm[5] = 22.0;
+  perm[6] = 13.0;
+  perm[7] = 28.0;
+  perm[8] = 30.0;
+  perm[9] = 19.0;
+  perm[10] = 1.0;
+  perm[11] = 6.0;
+  perm[12] = 26.0;
+  perm[13] = 10.0;
+  perm[14] = 9.0;
+  perm[15] = 15.0;
+  perm[16] = 14.0;
+  perm[17] = 24.0;
+  perm[18] = 31.0;
+  perm[19] = 27.0;
+  perm[20] = 16.0;
+  perm[21] = 21.0;
+  perm[22] = 20.0;
+  perm[23] = 5.0;
+  perm[24] = 17.0;
+  perm[25] = 29.0;
+  perm[26] = 18.0;
+  perm[27] = 11.0;
+  perm[28] = 12.0;
+  perm[29] = 4.0;
+  perm[30] = 7.0;
+  perm[31] = 25.0;
+
+//  const vec2 grad2[] = vec2[](vec2(2,1), vec2(2,-1), vec2(-2,1), vec2(-2,-1), vec2(1,2), vec2(1,-2), vec2(-1,2), vec2(-1,-2));
+  vec2 grad2[8];
+  grad2[0] = vec2(2,1);
+  grad2[1] = vec2(2,-1);
+  grad2[2] = vec2(-2,1);
+  grad2[3] = vec2(-2,-1);
+  grad2[4] = vec2(1,2);
+  grad2[5] = vec2(1,-2);
+  grad2[6] = vec2(-1,2);
+  grad2[7] = vec2(-1,-2);
+
+  // Noise contribution from lower left corner
+  //vec2 grad00 = grad2[int(mod(perm[ int(mod(perm[ int(mod(Pi.x, 32.0))] + Pi.y, 32.0))], 8.0))].xy;
+  int a = int(mod(4.0, 1.0));
+  vec2 grad00 = grad2[int(mod(perm[int(mod(perm[int(mod(Pi.x, 32.0))] + Pi.y, 32.0))], 8.0))].xy;
+  float n00 = dot(grad00, Pf);
+
+  // Noise contribution from lower right corner
+  //vec2 grad10 = grad2[int(mod(perm[ int(mod(perm[ int(mod(Pi.x+1, 32))] + Pi.y, 32))], 8))].xy;
+  vec2 grad10 = grad2[int(mod(perm[int(mod(perm[int(mod(Pi.x + 1.0, 32.0))] + Pi.y, 32.0))], 8.0))].xy;
+  float n10 = dot(grad10, Pf - vec2(1.0, 0.0));
+
+  // Noise contribution from upper left corner
+  //vec2 grad01 = grad2[int(mod(perm[ int(mod(perm[ int(mod(Pi.x, 32))] + Pi.y+1, 32))], 8))].xy;
+  vec2 grad01 = grad2[int(mod(perm[int(mod(perm[int(mod(Pi.x, 32.0))] + Pi.y + 1.0, 32.0))], 8.0))].xy;
+  float n01 = dot(grad01, Pf - vec2(0.0, 1.0));
+
+  // Noise contribution from upper right corner
+  //vec2 grad11 = grad2[int(mod(perm[ int(mod(perm[ int(mod(Pi.x+1, 32))] + Pi.y+1, 32))], 8))].xy;
+  vec2 grad11 = grad2[int(mod(perm[int(mod(perm[int(mod(Pi.x + 1.0, 32.0))] + Pi.y + 1.0, 32.0))], 8.0))].xy;
+  float n11 = dot(grad11, Pf - vec2(1.0, 1.0));
+
+  // Blend contributions along x
+  vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade(Pf.x));
+
+  // Blend contributions along y
+  float n_xy = mix(n_x.x, n_x.y, fade(Pf.y));
+
+  // We're done. Return the final noise value, scaled appropriately
+  return 0.4*n_xy;
+}
+
+void main( void )
+{
+  //float n = noise_new(v_texCoord2D * 32.0 + 240.0);
+  //float n = noise(v_texCoord2D * 32.0 + 240.0);
+  //float n = noise_new(vec3(4.0 * v_texCoord3D.xyz * (2.0 + sin(0.5 * time))));
+  //float n = noise(vec3(4.0 * v_texCoord3D.xyz * (2.0 + sin(0.5 * time))));
+  //float n = snoise(vec3(2.0 * v_texCoord3D.xyz * (2.0 + sin(0.5 * time))));
+  //float n = noise(vec4(8.0 * v_texCoord3D.xyz, 0.5 * time));
+  //float n = snoise(vec4(4.0 * v_texCoord3D.xyz, 0.5 * time));
+
+  float n = noise_new(vTexCoord * 32.0 + 240.0);
+  
+  gl_FragColor = vColor * vec4(0.5 + 0.5 * vec3(n, n, n), 1.0);
+
+}

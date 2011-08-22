@@ -846,6 +846,8 @@ class CuboidRoom extends Room {
     float angle;
     boolean depthGreatest = (depth>len);
 
+    boolean isDoor = (window.getStartPoint().getY() < 0.001f);
+
     if(depthGreatest) {
       float x1 = x;
       float x2 = x+depth;
@@ -867,7 +869,7 @@ class CuboidRoom extends Room {
     float relWindowZPlusSpanZ = (relWindowZ+(window.getWindowSpan().getX()*sin(angle)));
 
     float relWindowYTop = window.getStartPoint().getY() + window.getWindowSpan().getY();
-    float relWindowYBottom = window.getWindowSpan().getY();
+    float relWindowYBottom = window.getStartPoint().getY();
 
     if(depthGreatest) {
       //Since depth greatest, we are going along x axis, so no need to care about z
@@ -877,8 +879,10 @@ class CuboidRoom extends Room {
       res.add(new Cuboid(x+relWindowX,y+relWindowYTop,z, 
             window.getWindowSpan().getX(), ht-relWindowYTop, len)); //Above Window
 
-      res.add(new Cuboid(x+relWindowX,y,z, 
-            window.getWindowSpan().getX(), relWindowYBottom, len)); //Below Window
+      if(!isDoor){
+        res.add(new Cuboid(x+relWindowX,y,z, 
+              window.getWindowSpan().getX(), relWindowYBottom, len)); //Below Window
+      }
 
       res.add(new Cuboid(x+relWindowXPlusSpanX,y,z, 
             depth-relWindowXPlusSpanX, ht, len)); //Right of window
@@ -890,8 +894,10 @@ class CuboidRoom extends Room {
       res.add(new Cuboid(x,y+relWindowYTop,z+relWindowZ, 
             depth, ht-relWindowYTop, window.getWindowSpan().getX())); //Above Window
 
-      res.add(new Cuboid(x,y,z+relWindowZ, 
-            depth, relWindowYBottom, window.getWindowSpan().getX())); //Below Window
+      if(!isDoor) {
+        res.add(new Cuboid(x,y,z+relWindowZ, 
+              depth, relWindowYBottom, window.getWindowSpan().getX())); //Below Window
+      }
 
       res.add(new Cuboid(x,y,z+relWindowZPlusSpanZ, 
             depth, ht, len-relWindowZPlusSpanZ)); //Right of window
@@ -1071,6 +1077,7 @@ class Pillar extends Entity {
 
     float amount = 1.0;
     for (int i=0; i < numSlices; i++) {
+      /*
       res.add(new Point2(0,amount));
       res.add(new Point2(0,0));
       res.add(new Point2(amount,0));
@@ -1078,6 +1085,9 @@ class Pillar extends Entity {
       res.add(new Point2(0,amount));
       res.add(new Point2(amount,amount));
       res.add(new Point2(amount,0));
+      */
+      res.addAll(getTexCoordsFromSquare(0.0f, 0.0f,
+          amount, amount));
     }
 
     this.texCoords = res;
@@ -1095,7 +1105,7 @@ class GameLogic extends GameEventListener{
   public Room createRoom(int x, int y, int w, int h) {
     //Room room = new Room(x,y,w,h, 0.0f, 2.0f);
     Room room = new CuboidRoom(x,y,w,h, 0.0f, 2.0f, 0.2f);
-    room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+    //room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
     //room.addDoor(0, 3, 6);
     entities.add(room);
     GameEventManager.getInstance().addEvent(new AddEntityEvent(room));
@@ -1154,7 +1164,6 @@ class GameLogic extends GameEventListener{
 */
   public ArrayList<Entity> generateOfficeOuterRim(int roomWidth, int roomHeight, int max) {
     ArrayList<Entity> res = new ArrayList<Entity>();
-	  //Problem: Corner rooms have no hallway access
 	  for(int i = 0 ; i < max ; i++) {
 		  for(int j = 0 ; j < max ; j++) {
 			  if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
@@ -1166,11 +1175,88 @@ class GameLogic extends GameEventListener{
 				  continue;
 			  }
 
-			  if((j==0 || j==max-1) && (i==0 || i==max-2)) {
+			  if((j==0 || j==max-1) && (i==0 || i==max-2)) { //Corner room
 				  //Make room which is of twice the width in corners
-				  res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight));
+				  //res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight));
+          if(i==0 && j==0) {
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight);
+
+            room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            room.addWindow(1, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(3, new Point2(4.0, 1.0), new Point2(1.5,0.00001) ); //Door
+            room.addWindow(3, new Point2(4.0, 0.0), new Point2(0.5,1.0) ); //Door
+            res.add(room);
+          }else if (i==0 && j==max-1) {
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight);
+
+            room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            room.addWindow(3, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(1, new Point2(4.0, 1.0), new Point2(1.5,0.00001) ); //Door
+            room.addWindow(1, new Point2(4.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }else if (i==max-2 && j==0) {
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight);
+
+            room.addWindow(1, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            room.addWindow(2, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(3, new Point2(1.0, 1.0), new Point2(0.5,0.00001) ); //Door
+            room.addWindow(3, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }else if (i==max-2 && j==max-1) {
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight);
+
+            room.addWindow(2, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            room.addWindow(3, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(1, new Point2(1.0, 1.0), new Point2(0.5,0.00001) ); //Door
+            room.addWindow(1, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }
 			  } else {
-				  res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+          //Non corner room
+          if(i==0) {
+//            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(2, new Point2(1.0, 1.0), new Point2(0.3,0.00001) ); //Door
+            room.addWindow(2, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }else if(i==max-1) {
+//            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            room.addWindow(2, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(0, new Point2(1.0, 1.0), new Point2(0.5,0.00001) ); //Door
+            room.addWindow(0, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }else if(j==0) {
+//            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            room.addWindow(1, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(3, new Point2(1.0, 1.0), new Point2(0.5,0.00001) ); //Door
+            room.addWindow(3, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }else if(j==max-1) {
+//            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            room.addWindow(3, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
+            //room.addWindow(1, new Point2(1.0, 1.0), new Point2(0.5,0.00001) ); //Door
+            room.addWindow(1, new Point2(1.0, 0.0), new Point2(0.5,1.0) ); //Door
+
+            res.add(room);
+          }
 			  }
 		  }
 	  }
@@ -1178,7 +1264,6 @@ class GameLogic extends GameEventListener{
   }
   public ArrayList<Entity> generateOfficeInner(int roomWidth, int roomHeight, int max) {
     ArrayList<Entity> res = new ArrayList<Entity>();
-	  //Problem: Corner rooms have no hallway access
 	  for(int i = 0 ; i < max ; i++) {
 		  for(int j = 0 ; j < max ; j++) {
 			  if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
@@ -1190,7 +1275,22 @@ class GameLogic extends GameEventListener{
 			  }
 
 			  if((i>1) && (j>1) && (i<max-1) && (j<max-1)) { //middle offices only
-            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+          if(i==2){
+ //           res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            //room.addWindow(0, new Point2(1.0, 1.0), new Point2(0.5,0.001f) ); //Door
+            room.addWindow(0, new Point2(1.0, 0.0), new Point2(0.5f,1.0f) ); //Door
+
+            res.add(room);
+          }else if(i==4){
+ //           res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+            Room room = createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight);
+
+            room.addWindow(2, new Point2(1.0f, 0.0f), new Point2(0.5f,1.0f) ); //Door
+
+            res.add(room);
+          }
         }
 		  }
 	  }
@@ -1211,6 +1311,26 @@ class GameLogic extends GameEventListener{
     outputter.print(entity.toString());
     outputter.flush();
     outputter.close();
+  }
+
+  public ArrayList<Entity> generatePillars() {
+    ArrayList<Entity> res = new ArrayList<Entity>();
+
+    int xmax = 7;
+    int ymax = 7;
+    float xDist = 3.0f;
+    float yDist = 4.0f;
+    float rad = 0.2f;
+    float lowY = 0.0f;
+    float highY = 2.0f;
+
+	  for(int i = 1 ; i < xmax ; i++) {
+		  for(int j = 1 ; j < ymax ; j++) {
+        res.add(new Pillar(xDist * i, yDist * j, rad, lowY, highY));
+      }
+    }
+
+    return res;
   }
 
   public void init() {
@@ -1235,19 +1355,25 @@ class GameLogic extends GameEventListener{
     //
 
 
-    Plane ceiling = new Plane(0,0, 1000,1000, 2);
+    Plane ceiling = new Plane(0,0, 21,28, 2);
     System.out.print("Ceiling:\n---\n" + ceiling.toString() + "\n---");
     outputToFile(ceiling, "ceiling.txt");
 
-    Plane floor = new Plane(0,0, 1000,1000, 0);
+    Plane floor = new Plane(0,0, 21,28, 0);
     System.out.println("Floor:\n---\n" + floor.toString() + "\n---");
     outputToFile(floor, "floor.txt");
 
     PrintWriter pillarOutputter = createWriter("pillars.txt"); 
+    /*
     ArrayList<Entity> pillars = new ArrayList<Entity>();
+
     //TODO : Generate a pattern of pillars
     Pillar pillar = new Pillar(0.0,0.0, 0.2, 0.0, 2.0);
     pillars.add(pillar);
+    */
+
+    ArrayList<Entity> pillars = generatePillars();
+    
     //System.out.println("Pillar:\n---\n" + pillar.toString() + "\n---");
     //System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");
     pillarOutputter.print(getEntitiesAsStr(10,10,pillars));

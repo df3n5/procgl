@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+  <!-- Inherit our applications main module.                      -->
+  <inherits name='com.df3n5.gwtproc.GwtProcDemos' />
+
+  <!-- Specify the path to any remote services.                   -->
+  <servlet path="/GwtProcDemos/greet" class="com.df3n5.gwtproc.server.GreetingServiceImpl" />
+
+</module>
