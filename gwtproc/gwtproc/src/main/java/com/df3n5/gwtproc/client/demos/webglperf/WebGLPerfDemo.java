@@ -52,7 +52,7 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 	private Date currentTime;
 	private Date lastTime;
 	
-	private final int SUBDIVISION_LEVEL = 2000;
+	private final int SUBDIVISION_LEVEL = 2;
 	private final boolean isWithTex = true;
 
     Logger perfLogger = Logger.getLogger("WebGLPerfDemo Logger");
@@ -258,7 +258,7 @@ public class WebGLPerfDemo extends AbstractGwtProcDemo {
 	 * coordinates.
 	 */
 	private void initBuffers() {
-		float halfSize = 10000.0f;
+		float halfSize = 1.0f;
 		float newHalfSize = halfSize / SUBDIVISION_LEVEL;
 		float squareSide = newHalfSize * 2.0f;
 		float z = -1.0f;

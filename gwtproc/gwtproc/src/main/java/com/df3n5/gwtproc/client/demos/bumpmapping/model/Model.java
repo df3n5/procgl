@@ -152,15 +152,23 @@ public class Model {
 			FloatMatrix perspectiveMatrix,
 			FloatMatrix resultingMatrix,
 			boolean isProc) {
-		WebGLUniformLocation mvUniform = glContext.getUniformLocation(
-				getShaderProgram(glContext, isProc), "uMVMatrix");
-		glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
-		
+
 		WebGLUniformLocation projectionUniform = glContext.getUniformLocation(shaderProgram, "uPMatrix");
 		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
 		
-		WebGLUniformLocation lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
-		glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
+		if(isProc){
+			WebGLUniformLocation mvUniform = glContext.getUniformLocation(
+					getShaderProgram(glContext, isProc), "uMVMatrix");
+			glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
+			
+			WebGLUniformLocation lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
+			glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
+		}
+		
+		if(! isProc) {
+			WebGLUniformLocation textureUniform = glContext.getUniformLocation(shaderProgram, "tex");
+			glContext.uniform1i(textureUniform, 0);
+		}
 	}
 	
 	/**
@@ -171,6 +179,8 @@ public class Model {
 		if(isProc) {
 			switch(type) {
 				case Model.WALL_TYPE:
+					break;
+				case Model.WALL2_TYPE:
 					break;
 				case Model.FLOOR_TYPE:
 					break;
@@ -185,6 +195,8 @@ public class Model {
 			switch(type) {
 				case Model.WALL_TYPE:
 					break;
+				case Model.WALL2_TYPE:
+					break;
 				case Model.FLOOR_TYPE:
 					break;
 				case Model.CEILING_TYPE:
@@ -193,7 +205,7 @@ public class Model {
 					break;
 				case Model.SKYBOX_TYPE:
 					break;
-		}
+			}
 		}
 	}
 	
@@ -202,7 +214,6 @@ public class Model {
 				getShaderProgram(glContext, isProc), "aVertexPosition");
 		glContext.enableVertexAttribArray(vertexPositionAttribute);
 
-		
 		glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, getVertexBuffer());
 		glContext.vertexAttribPointer(vertexPositionAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
 		
@@ -223,6 +234,8 @@ public class Model {
 		    switch(type) {
 			    case Model.WALL_TYPE:
 			    	break;
+				case Model.WALL2_TYPE:
+					break;
 			    case Model.FLOOR_TYPE:
 			    	break;
 			    case Model.CEILING_TYPE:
@@ -243,6 +256,8 @@ public class Model {
 		    switch(type) {
 			    case Model.WALL_TYPE:
 			    	break;
+				case Model.WALL2_TYPE:
+					break;
 			    case Model.FLOOR_TYPE:
 			    	break;
 			    case Model.CEILING_TYPE:

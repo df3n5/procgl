@@ -1,6 +1,5 @@
 package com.df3n5.gwtproc.client.demos.bumpmapping;
 
-import com.df3n5.gwtproc.client.demos.bumpmapping.model.Model;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
@@ -79,7 +78,6 @@ public interface Resources extends ClientBundle {
 	TextResource wall2_file_vert();
 	//-------------------------------------------------------
 	//END file shaders
-	
 	
 	//-------------------------------------------------------
 	//BEGIN assets

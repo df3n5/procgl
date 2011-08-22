@@ -56,6 +56,12 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 	@Override
 	protected void init() {
 		models = loader.getModels();
+		
+		if(isProc) {
+			TextureLoader textureLoader = new TextureLoader();
+			textureLoader.initTextures(glContext);
+		}
+		
 		drawer.init(webGLCanvas);
 	}
 	
