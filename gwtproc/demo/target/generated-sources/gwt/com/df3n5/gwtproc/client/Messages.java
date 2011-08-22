@@ -2,7 +2,7 @@ package com.df3n5.gwtproc.client;
 
 /**
  * Interface to represent the messages contained in resource bundle:
- * 	/home/j0n/code/procgl/gwtproc/gwtproc/src/main/resources/com/df3n5/gwtproc/client/Messages.properties'.
+ * 	/home/j0n/code/procgl/gwtproc/demo/src/main/resources/com/df3n5/gwtproc/client/Messages.properties'.
  */
 public interface Messages extends com.google.gwt.i18n.client.Messages {
   

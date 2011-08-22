@@ -7,7 +7,7 @@ public class Resources_default_InlineClientBundleGenerator implements com.df3n5.
   private static Resources_default_InlineClientBundleGenerator _instance0 = new Resources_default_InlineClientBundleGenerator();
   private void fragmentShaderWithTexInitializer() {
     fragmentShaderWithTex = new com.google.gwt.resources.client.TextResource() {
-      // file:/home/j0n/code/procgl/gwtproc/gwtproc/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/withtex.frag
+      // file:/home/j0n/code/procgl/gwtproc/demo/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/withtex.frag
       public String getText() {
         return "#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D tex;\nvarying vec2 texCoord;\nvoid main() {\n	gl_FragColor = texture2D(tex, texCoord);\n}";
       }
@@ -30,7 +30,7 @@ public class Resources_default_InlineClientBundleGenerator implements com.df3n5.
   }
   private void fragmentShaderWithoutTexInitializer() {
     fragmentShaderWithoutTex = new com.google.gwt.resources.client.TextResource() {
-      // file:/home/j0n/code/procgl/gwtproc/gwtproc/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/notex.frag
+      // file:/home/j0n/code/procgl/gwtproc/demo/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/notex.frag
       public String getText() {
         return "#ifdef GL_ES\nprecision highp float;\n#endif\n\nvoid main() {\n	gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n}";
       }
@@ -53,7 +53,7 @@ public class Resources_default_InlineClientBundleGenerator implements com.df3n5.
   }
   private void vertexShaderWithTexInitializer() {
     vertexShaderWithTex = new com.google.gwt.resources.client.TextResource() {
-      // file:/home/j0n/code/procgl/gwtproc/gwtproc/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/withtex.vert
+      // file:/home/j0n/code/procgl/gwtproc/demo/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/withtex.vert
       public String getText() {
         return "attribute vec3 vertexPosition;\nattribute vec2 texPosition;\nuniform mat4 projectionMatrix;\nvarying vec2 texCoord;\nvoid main() {\n	gl_Position = projectionMatrix * vec4(vertexPosition, 1.0);\n	texCoord = texPosition;\n}";
       }
@@ -76,7 +76,7 @@ public class Resources_default_InlineClientBundleGenerator implements com.df3n5.
   }
   private void vertexShaderWithoutTexInitializer() {
     vertexShaderWithoutTex = new com.google.gwt.resources.client.TextResource() {
-      // file:/home/j0n/code/procgl/gwtproc/gwtproc/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/notex.vert
+      // file:/home/j0n/code/procgl/gwtproc/demo/src/main/java/com/df3n5/gwtproc/client/demos/webglperf/notex.vert
       public String getText() {
         return "attribute vec3 vertexPosition;\nuniform mat4 projectionMatrix;\nvoid main() {\n	gl_Position = projectionMatrix * vec4(vertexPosition, 1.0);\n}";
       }

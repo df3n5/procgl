@@ -11,7 +11,7 @@ public interface GreetingServiceAsync
      * GWT-RPC service  asynchronous (client-side) interface
      * @see com.df3n5.gwtproc.client.GreetingService
      */
-    void greetServer( java.lang.String name, AsyncCallback<java.lang.String> callback );
+    void greetServer( java.lang.String p0, AsyncCallback<java.lang.String> callback );
 
 
     /**
@@ -27,7 +27,7 @@ public interface GreetingServiceAsync
             {
                 instance = (GreetingServiceAsync) GWT.create( GreetingService.class );
                 ServiceDefTarget target = (ServiceDefTarget) instance;
-                target.setServiceEntryPoint( GWT.getModuleBaseURL() + "greet" );
+                target.setServiceEntryPoint( GWT.getModuleBaseURL() + "GreetingService" );
             }
             return instance;
         }
