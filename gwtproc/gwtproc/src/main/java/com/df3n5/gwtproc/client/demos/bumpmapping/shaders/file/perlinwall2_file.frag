@@ -77,5 +77,5 @@ void main(void) {
 	//n += 0.03125 * snoise(uvw * 32.0 - vec3(0.0, 0.0, time*5.6));
 	n = sin(n);
 
-	gl_FragColor = vec4(vec3(0.0, -0.9, -0.9) + vec3(n, n, n), 1.0); //Wall material
+	gl_FragColor = vec4(vec3(-0.4, -0.4, 0.0) + vec3(n, n, n), 1.0); //Wall material
 }
