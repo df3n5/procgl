@@ -38,6 +38,11 @@ public interface Resources extends ClientBundle {
 	TextResource wall_proc_frag();
 	@Source(value = { shader_proc_base_dir + "perlinwall_proc.vert" })
 	TextResource wall_proc_vert();
+	
+	@Source(value = { shader_proc_base_dir + "perlinwall2_proc.frag" })
+	TextResource wall2_proc_frag();
+	@Source(value = { shader_proc_base_dir + "perlinwall2_proc.vert" })
+	TextResource wall2_proc_vert();
 	//-------------------------------------------------------
 	//END proc shaders
 	
@@ -67,6 +72,11 @@ public interface Resources extends ClientBundle {
 	TextResource wall_file_frag();
 	@Source(value = { shader_file_base_dir + "perlinwall_file.vert" })
 	TextResource wall_file_vert();
+	
+	@Source(value = { shader_file_base_dir + "perlinwall2_file.frag" })
+	TextResource wall2_file_frag();
+	@Source(value = { shader_file_base_dir + "perlinwall2_file.vert" })
+	TextResource wall2_file_vert();
 	//-------------------------------------------------------
 	//END file shaders
 	
@@ -75,6 +85,9 @@ public interface Resources extends ClientBundle {
 	//BEGIN assets
 	@Source(value = { asset_base_dir + "walls.txt" })
 	TextResource walls();
+	
+	@Source(value = { asset_base_dir + "walls2.txt" })
+	TextResource walls2();
 	
 	@Source(value = { asset_base_dir + "ceiling.txt" })
 	TextResource ceiling();

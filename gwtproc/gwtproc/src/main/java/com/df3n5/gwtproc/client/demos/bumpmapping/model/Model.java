@@ -25,6 +25,7 @@ public class Model {
 	public final static int CEILING_TYPE = 2;
 	public final static int PILLAR_TYPE = 3;
 	public final static int SKYBOX_TYPE = 4;
+	public final static int WALL2_TYPE = 5;
 	
 	public Model() {
 		shaderProgram = null;
@@ -83,6 +84,8 @@ public class Model {
 					return Resources.INSTANCE.skybox_proc_frag().getText();
 				case Model.WALL_TYPE:
 					return Resources.INSTANCE.wall_proc_frag().getText();
+				case Model.WALL2_TYPE:
+					return Resources.INSTANCE.wall2_proc_frag().getText();
 				default:
 					return "NULL";
 			}
@@ -98,6 +101,8 @@ public class Model {
 					return Resources.INSTANCE.skybox_file_frag().getText();
 				case Model.WALL_TYPE:
 					return Resources.INSTANCE.wall_file_frag().getText();
+				case Model.WALL2_TYPE:
+					return Resources.INSTANCE.wall2_file_frag().getText();
 				default:
 					return "NULL";
 			}
@@ -117,6 +122,8 @@ public class Model {
 					return Resources.INSTANCE.skybox_proc_vert().getText();
 				case Model.WALL_TYPE:
 					return Resources.INSTANCE.wall_proc_vert().getText();
+				case Model.WALL2_TYPE:
+					return Resources.INSTANCE.wall2_proc_vert().getText();
 				default:
 					return "NULL";
 			}
@@ -132,6 +139,8 @@ public class Model {
 					return Resources.INSTANCE.skybox_file_vert().getText();
 				case Model.WALL_TYPE:
 					return Resources.INSTANCE.wall_file_vert().getText();
+				case Model.WALL2_TYPE:
+					return Resources.INSTANCE.wall2_file_vert().getText();
 				default:
 					return "NULL";
 			}
@@ -227,25 +236,29 @@ public class Model {
 			    	break;
 			    case Model.SKYBOX_TYPE:
 			    	break;
+			    default:
+			    	break;
 		    }
 		}else{
 		    switch(type) {
-		    case Model.WALL_TYPE:
-		    	break;
-		    case Model.FLOOR_TYPE:
-		    	break;
-		    case Model.CEILING_TYPE:
-		    	break;
-		    case Model.PILLAR_TYPE:
-		    	int normalAttribute = glContext.getAttribLocation(
-		    			getShaderProgram(glContext, isProc), "aNormal");
-		    	glContext.enableVertexAttribArray(normalAttribute);
-				glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, getNormalBuffer());
-				glContext.vertexAttribPointer(normalAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
-		    	break;
-		    case Model.SKYBOX_TYPE:
-		    	break;
-	    }
+			    case Model.WALL_TYPE:
+			    	break;
+			    case Model.FLOOR_TYPE:
+			    	break;
+			    case Model.CEILING_TYPE:
+			    	break;
+			    case Model.PILLAR_TYPE:
+			    	int normalAttribute = glContext.getAttribLocation(
+			    			getShaderProgram(glContext, isProc), "aNormal");
+			    	glContext.enableVertexAttribArray(normalAttribute);
+					glContext.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, getNormalBuffer());
+					glContext.vertexAttribPointer(normalAttribute, 3, WebGLRenderingContext.FLOAT, false, 0, 0);
+			    	break;
+			    case Model.SKYBOX_TYPE:
+			    	break;
+			    default:
+			    	break;
+		    }
 		}
 	}
 	

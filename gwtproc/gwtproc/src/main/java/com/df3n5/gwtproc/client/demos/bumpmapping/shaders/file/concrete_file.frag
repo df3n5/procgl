@@ -13,9 +13,9 @@ varying vec3 vEyeDir;
 //uniform float BumpDensity;     // = 16.0
 //uniform float BumpSize;        // = 0.15
 //uniform float SpecularFactor;  // = 0.5
-vec3  SurfaceColor = vec3(0.7, 0.6, 0.18);
+vec3  SurfaceColor = vec3(0.7, 0.7, 0.7);
 float BumpDensity = 16.0;
-float BumpSize = 0.15;
+float BumpSize = 0.015;
 float SpecularFactor = 0.5;
 
 uniform int uProcTextureType;
@@ -44,7 +44,8 @@ void main()
 
     spec *= SpecularFactor;
 
-    litColor = min(litColor + spec, vec3(1.0));
+    //litColor = min(litColor + spec, vec3(1.0));
+    litColor = litColor + spec;
 
     gl_FragColor = vec4(litColor, 1.0);
 }

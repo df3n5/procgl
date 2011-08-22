@@ -102,15 +102,14 @@ public class ProceduralModelLoader extends AbstractModelLoader {
 	}
 
 	@Override
-	public Model[] getModels() {
-		Model[] models = new Model[5];
+	public ArrayList<Model> getModels() {
+		ArrayList<Model> models = new ArrayList<Model>();
 		
-	    int i = 0;
-		models[i++] = loadWalls();
-		models[i++] = loadFloor();
-		models[i++] = loadCeiling();
-		models[i++] = loadPillars();
-		models[i++] = loadSkybox();
+		models.add(loadWalls());
+		models.add(loadFloor());
+		models.add(loadCeiling());
+		models.add(loadPillars());
+		models.add(loadSkybox());
 	    
 	    return models;
 	}

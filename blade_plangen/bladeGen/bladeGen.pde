@@ -151,7 +151,7 @@ class Vector3 {
       float invMag = 1.0f/mag;
       return new Vector3(invMag*x, invMag*y, invMag*z);
     } else {
-      throw new Exception("Vector cannot have a mag 0 and have a normal");
+      throw new Exception("Vector cannot have a mag <= 0 and be able to normalize;");
     }
   }
 }
@@ -322,7 +322,8 @@ abstract class Entity {
     //    res.add(new Triangle(x1,highY,z1, x2,lowY, z2, x2,highY,z2));
 
     res.add(new Triangle(x1,highY,z1, x1,lowY,z1, x2,lowY,z2));
-    res.add(new Triangle(x1,highY,z1, x2,highY,z2, x2,lowY,z2));
+//    res.add(new Triangle(x1,highY,z1, x2,highY,z2, x2,lowY,z2));
+    res.add(new Triangle(x1,highY,z1, x2,lowY,z2, x2,highY,z2));
     return res; 
   }
 
@@ -342,7 +343,8 @@ abstract class Entity {
     ArrayList<Triangle> res = new ArrayList<Triangle>();
 
     res.add(new Triangle(x1,y1,z1, x1,y2, z1, x2,y2,z2));
-    res.add(new Triangle(x1,y1,z1, x2, y1, z2, x2,y2,z2));
+    //res.add(new Triangle(x1,y1,z1, x2, y1, z2, x2,y2,z2));
+    res.add(new Triangle(x1,y1,z1, x2, y2, z2, x2,y1,z2));
     return res;
   }
 
@@ -374,9 +376,14 @@ abstract class Entity {
     res.add(new Point2(x1,y2));
     res.add(new Point2(x2,y2));
 
+    /*
     res.add(new Point2(x1,y1));
     res.add(new Point2(x2,y1));
     res.add(new Point2(x2,y2));
+    */
+    res.add(new Point2(x1,y1));
+    res.add(new Point2(x2,y2));
+    res.add(new Point2(x2,y1));
 
    return res;
   }
@@ -553,6 +560,7 @@ abstract class Entity {
     float y2 = 1.0;
 
     for(int i = 0 ; i < 6 ; i++) {
+      /*
       //Ignore windows
       res.add(new Point2(x1,y1));
       res.add(new Point2(x1,y2));
@@ -561,6 +569,8 @@ abstract class Entity {
       res.add(new Point2(x1,y1));
       res.add(new Point2(x2,y1));
       res.add(new Point2(x2,y2));
+      */
+      res.addAll(getTexCoordsFromSquare(x1,y1,x2,y2));
     }
     return res;
   }
@@ -800,7 +810,6 @@ class Room extends Entity {
     this.triangles = res;
   }
 
-
   protected void generateTexCoords() {
     ArrayList<Point2> res = new ArrayList<Point2>();
     res.addAll(getTexCoordsForWall(0, lowY, highY));
@@ -920,8 +929,8 @@ class CuboidRoom extends Room {
 
     //alpha
     cuboids.addAll(getCuboidForWall(0, 
-          x,lowY,y, 
-          wallWidth,roomHeight,ht));
+          x,lowY,y+wallWidth, 
+          wallWidth,roomHeight,ht-(2*wallWidth)));
 
     //beta
     cuboids.addAll(getCuboidForWall(1,
@@ -930,8 +939,8 @@ class CuboidRoom extends Room {
 
     //gamma
     cuboids.addAll(getCuboidForWall(2,
-        x+wt-wallWidth,lowY,y, 
-        wallWidth,roomHeight,ht));
+        x+wt-wallWidth,lowY,y+wallWidth, 
+        wallWidth,roomHeight,ht-(2*wallWidth)));
 
     //delta
     cuboids.addAll(getCuboidForWall(3,
@@ -1015,7 +1024,7 @@ class Pillar extends Entity {
   public Pillar(float x, float y, float radius, float lowY, float highY) {
     super(Entity.PILLAR_TYPE, x, y);
     this.radius = radius;
-    this.numSlices = 20;
+    this.numSlices = 30;
     //totalAngle = 360.0f;
     totalAngle = 360.0f;
     //this.widthResolution = 10;
@@ -1037,14 +1046,16 @@ class Pillar extends Entity {
       float x1 = x + (cos(degreeToRad( angle * i )) * radius);
       float y1 = y + (sin(degreeToRad( angle * i )) * radius);
 
-      if((i+1) <= numSlices) { //Defensive coding, shouldn't happen.
+      if((i+1) <= numSlices) { //Defensive coding, shouldn't not happen.
         float x2 = x + (cos(degreeToRad( angle * (i+1) )) * radius);
         float y2 = y + (sin(degreeToRad( angle * (i+1) )) * radius);
 
-        System.out.println("angle*i is :  " + (angle*i));
-        System.out.println("x1 " + x1 + " y1 : " + y1 + " x2: " + x2 + " y2 " + y2);
+        res.addAll(extrudeLineSegTo3D(x1,y1, x2,y2, lowY, highY));
+        /*
+        res.addAll(getTrianglesFromSquare(x1, lowY, y1,
+              x2, highY, y2));
+              */
 
-        res.addAll(extrudeLineSegTo3D(x1,y1, x2, y2, lowY, highY));
       }
     }
 
@@ -1058,7 +1069,7 @@ class Pillar extends Entity {
   protected void generateTexCoords() {
     ArrayList<Point2> res = new ArrayList<Point2>();
 
-    float amount = 6.0;
+    float amount = 1.0;
     for (int i=0; i < numSlices; i++) {
       res.add(new Point2(0,amount));
       res.add(new Point2(0,0));
@@ -1081,13 +1092,14 @@ class GameLogic extends GameEventListener{
   }
 
   //Factory method
-  public void createRoom(int x, int y, int w, int h) {
+  public Room createRoom(int x, int y, int w, int h) {
     //Room room = new Room(x,y,w,h, 0.0f, 2.0f);
     Room room = new CuboidRoom(x,y,w,h, 0.0f, 2.0f, 0.2f);
     room.addWindow(0, new Point2(0.4, 0.6), new Point2(0.5,0.5) );
     //room.addDoor(0, 3, 6);
     entities.add(room);
     GameEventManager.getInstance().addEvent(new AddEntityEvent(room));
+    return room;
   }
 
   public void generateGrid(int roomLength, int max) {
@@ -1117,6 +1129,7 @@ class GameLogic extends GameEventListener{
   }
 */
 
+  /*
   public void generateOffice01(int roomWidth, int roomHeight, int max) {
 	  //Problem: Corner rooms have no hallway access
 	  for(int i = 0 ; i < max ; i++) {
@@ -1138,6 +1151,51 @@ class GameLogic extends GameEventListener{
 		  }
 	  }
   }
+*/
+  public ArrayList<Entity> generateOfficeOuterRim(int roomWidth, int roomHeight, int max) {
+    ArrayList<Entity> res = new ArrayList<Entity>();
+	  //Problem: Corner rooms have no hallway access
+	  for(int i = 0 ; i < max ; i++) {
+		  for(int j = 0 ; j < max ; j++) {
+			  if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
+					  || ((j==1) && (i!=0) && (i!=max-1)) //Left side hallway
+					  || ((j==max-2) && (i!=0) && (i!=max-1)) //Right side hallway
+					  || ((i==1 || i==max-1) && (j==0 || j==max-1)) //No 2nd one
+            || ( (i>1) && (j>1) && (i<max-1) && (j<max-1)) //No middle offices
+				){
+				  continue;
+			  }
+
+			  if((j==0 || j==max-1) && (i==0 || i==max-2)) {
+				  //Make room which is of twice the width in corners
+				  res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth*2,roomHeight));
+			  } else {
+				  res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+			  }
+		  }
+	  }
+    return res;
+  }
+  public ArrayList<Entity> generateOfficeInner(int roomWidth, int roomHeight, int max) {
+    ArrayList<Entity> res = new ArrayList<Entity>();
+	  //Problem: Corner rooms have no hallway access
+	  for(int i = 0 ; i < max ; i++) {
+		  for(int j = 0 ; j < max ; j++) {
+			  if( ((i % 2 == 1) && (j!=0) && (j!=(max-1))) //Left and Right sides
+					  || ((j==1) && (i!=0) && (i!=max-1)) //Left side hallway
+					  || ((j==max-2) && (i!=0) && (i!=max-1)) //Right side hallway
+					  || ((i==1 || i==max-1) && (j==0 || j==max-1)) //No 2nd one
+				){
+				  continue;
+			  }
+
+			  if((i>1) && (j>1) && (i<max-1) && (j<max-1)) { //middle offices only
+            res.add(createRoom(i*roomWidth,j*roomHeight,roomWidth,roomHeight));
+        }
+		  }
+	  }
+    return res;
+  }
 
   public String getEntitiesAsStr(int camx, int camy, ArrayList<Entity> entities) {
     String resultStr = "";
@@ -1157,14 +1215,24 @@ class GameLogic extends GameEventListener{
 
   public void init() {
 //    generateGrid(7,7);
-    generateOffice01(3,4,7);
+    //generateOffice01(3,4,7);
+    ArrayList<Entity> outerOffices = generateOfficeOuterRim(3,4,7);
 
     PrintWriter output = createWriter("walls.txt"); 
-    String entityStr = getEntitiesAsStr(10,10,entities);
-//    System.out.println("Entities:\n---\n " + entityStr + "\n---");
+    String entityStr = getEntitiesAsStr(10,10,outerOffices);
     output.println(entityStr);
     output.flush(); // Writes the remaining data to the file
     output.close(); // Finishes the file
+
+
+    //Inner
+    ArrayList<Entity> innerOffices = generateOfficeInner(3,4,7);
+    PrintWriter output2 = createWriter("walls2.txt"); 
+    String innerOfficeStr = getEntitiesAsStr(10,10,innerOffices);
+    output2.println(innerOfficeStr);
+    output2.flush(); // Writes the remaining data to the file
+    output2.close(); // Finishes the file
+    //
 
 
     Plane ceiling = new Plane(0,0, 1000,1000, 2);
@@ -1178,10 +1246,10 @@ class GameLogic extends GameEventListener{
     PrintWriter pillarOutputter = createWriter("pillars.txt"); 
     ArrayList<Entity> pillars = new ArrayList<Entity>();
     //TODO : Generate a pattern of pillars
-    Pillar pillar = new Pillar(0.0,0.0, 0.5, 0.0, 2.0);
+    Pillar pillar = new Pillar(0.0,0.0, 0.2, 0.0, 2.0);
     pillars.add(pillar);
     //System.out.println("Pillar:\n---\n" + pillar.toString() + "\n---");
-    System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");
+    //System.out.println("Pillars:\n---\n" + getEntitiesAsStr(10,10,pillars) + "\n---");
     pillarOutputter.print(getEntitiesAsStr(10,10,pillars));
     pillarOutputter.flush();
     pillarOutputter.close();

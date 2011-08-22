@@ -77,6 +77,12 @@ public class TextModelLoader extends AbstractModelLoader {
 		model.setType(Model.WALL_TYPE);
 		return model;
 	}
+	
+	public Model loadWalls2() {
+		Model model = loadModelFromString(Resources.INSTANCE.walls2().getText());
+		model.setType(Model.WALL2_TYPE);
+		return model;
+	}
 
 	public Model loadFloor() {
 		Model model = loadModelFromString(Resources.INSTANCE.floor().getText());
@@ -96,15 +102,15 @@ public class TextModelLoader extends AbstractModelLoader {
 		return model;
 	}
 	
-	public Model[] getModels() {
-		Model[] models = new Model[3];
+	public ArrayList<Model> getModels() {
+		ArrayList<Model> models = new ArrayList<Model>();
 		
-		int i = 0;
-		models[i++] = loadWalls();
-		//models[i++] = loadFloor();
-		//models[i++] = loadCeiling();
-		models[i++] = loadPillars();
-		models[i++] = loadSkybox();
+		models.add(loadWalls());
+		models.add(loadWalls2());
+		models.add(loadFloor());
+		//models.add(loadCeiling());
+		models.add(loadPillars());
+		models.add(loadSkybox());
 
 		return models;
 	}

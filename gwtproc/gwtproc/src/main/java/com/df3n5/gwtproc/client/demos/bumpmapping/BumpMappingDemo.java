@@ -1,5 +1,6 @@
 package com.df3n5.gwtproc.client.demos.bumpmapping;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import com.df3n5.gwtproc.client.AbstractGwtProcDemo;
@@ -15,7 +16,7 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 	
 	protected AbstractModelLoader loader;
 	protected ModelDrawer drawer;
-	protected Model[] models;
+	protected ArrayList<Model> models;
 	protected static final boolean isProc = false;
 
 	public BumpMappingDemo() {
@@ -58,8 +59,8 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 	@Override
 	protected void draw() {
 		drawer.beginDraw();
-		for(int i = 0 ; i < models.length ; i++) {
-			drawer.drawModel(models[i], isProc);
+		for(Model model : models) {
+			drawer.drawModel(model, isProc);
 		}
 		drawer.endDraw();
 	}

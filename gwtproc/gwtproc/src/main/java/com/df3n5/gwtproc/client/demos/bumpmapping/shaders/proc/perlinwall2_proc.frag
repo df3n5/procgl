@@ -69,9 +69,9 @@ void main(void) {
 			
 	//http://www.noisemachine.com/talk1/22.html
 	float n = 0.5; //x coord of surface location
-	//n += snoise(uvw - vec3(0.0, 0.0, time));
-	//n += 0.5 * snoise(uvw * 2.0 - vec3(0.0, 0.0, time*1.4));
-	//n += 0.25 * snoise(uvw * 4.0 - vec3(0.0, 0.0, time*2.0));
+	n += snoise(uvw - vec3(0.0, 0.0, time));
+	n += 0.5 * snoise(uvw * 2.0 - vec3(0.0, 0.0, time*1.4));
+	n += 0.25 * snoise(uvw * 4.0 - vec3(0.0, 0.0, time*2.0));
 	n += 0.125 * snoise(uvw * 8.0 - vec3(0.0, 0.0, time*2.8));
 	n += 0.0625 * snoise(uvw * 16.0 - vec3(0.0, 0.0, time*4.0));
 	n += 0.03125 * snoise(uvw * 32.0 - vec3(0.0, 0.0, time*5.6));

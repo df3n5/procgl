@@ -18,7 +18,7 @@ public abstract class AbstractModelLoader {
 		this.glContext = glContext;
 	}
 	
-	public abstract Model[] getModels();
+	public abstract ArrayList<Model> getModels();
 	
 	protected WebGLBuffer loadVertexBuffer(final ArrayList<VertexData> vertexDatas) {
 		WebGLBuffer vertexPosBuffer = glContext.createBuffer();
