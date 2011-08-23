@@ -1,5 +1,5 @@
 #!/bin/bash
-mvn package
+#mvn package
 rm -rvf /opt/tomcat/webapps/*.war
 cp -v target/*.war /opt/tomcat/webapps
 

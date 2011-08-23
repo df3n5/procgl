@@ -1,5 +1,9 @@
 package com.df3n5.gwtproc.client.demos.bumpmapping;
 
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -18,8 +22,13 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 	protected ModelDrawer drawer;
 	protected ArrayList<Model> models;
 	protected static final boolean isProc = false;
+
+    Logger perfLogger = Logger.getLogger("WebGLPerfDemo Logger");
 	
 	public static BumpMappingDemo INSTANCE;
+	
+	private Date currentTime = new Date();;
+	private Date lastTime;
 
 	public BumpMappingDemo() {
 		super();
@@ -55,18 +64,27 @@ public class BumpMappingDemo extends AbstractGwtProcDemo {
 
 	@Override
 	protected void init() {
+		Date beforeInit = new Date();
+		
 		models = loader.getModels();
 		
-		if(isProc) {
+		if(! isProc) {
 			TextureLoader textureLoader = new TextureLoader();
 			textureLoader.initTextures(glContext);
 		}
 		
 		drawer.init(webGLCanvas);
+		Date afterInit = new Date();
+		perfLogger.log(Level.INFO, Long.toString(afterInit.getTime() - beforeInit.getTime()));
 	}
 	
 	@Override
 	protected void draw() {
+		lastTime = currentTime;
+		currentTime = new Date();
+		//System.out.println((currentTime.getTime() - lastTime.getTime()));
+		perfLogger.log(Level.INFO, Long.toString(currentTime.getTime() - lastTime.getTime()));
+		
 		drawer.beginDraw();
 		for(Model model : models) {
 			drawer.drawModel(model, isProc);

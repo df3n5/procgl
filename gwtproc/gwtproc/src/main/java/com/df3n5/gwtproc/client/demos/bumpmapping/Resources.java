@@ -96,29 +96,23 @@ public interface Resources extends ClientBundle {
 	@Source(value = { asset_base_dir + "pillars.txt" })
 	TextResource pillars();
 
-	@Source(value = { asset_base_dir + "skybox_water_ft.png" })
-	ImageResource textureSkyboxFt();
-
-	@Source(value = { asset_base_dir + "skybox_water_lf.png" })
-	ImageResource textureSkyboxLf();
+	@Source(value = { asset_base_dir + "tex0.png" })
+	ImageResource tex0();
 	
-	@Source(value = { asset_base_dir + "skybox_water_up.png" })
-	ImageResource textureSkyboxUp();
+	@Source(value = { asset_base_dir + "tex1.png" })
+	ImageResource tex1();
 	
-	@Source(value = { asset_base_dir + "skybox_water_bk.png" })
-	ImageResource textureSkyboxBk();
+	@Source(value = { asset_base_dir + "tex2.png" })
+	ImageResource tex2();
 	
-	@Source(value = { asset_base_dir + "skybox_water_rt.png" })
-	ImageResource textureSkyboxRt();
+	@Source(value = { asset_base_dir + "tex3.png" })
+	ImageResource tex3();
 	
-	@Source(value = { asset_base_dir + "skybox_water_dn.png" })
-	ImageResource textureSkyboxDn();
+	@Source(value = { asset_base_dir + "tex4.png" })
+	ImageResource tex4();
 	
-	@Source(value = { asset_base_dir + "mudTexture.gif" })
-	ImageResource mudTexture();
-	
-	@Source(value = { asset_base_dir + "wallTexture.jpg" })
-	ImageResource wallTexture();
+	@Source(value = { asset_base_dir + "tex5.png" })
+	ImageResource tex5();
 	//-------------------------------------------------------
 	//END assets
 }

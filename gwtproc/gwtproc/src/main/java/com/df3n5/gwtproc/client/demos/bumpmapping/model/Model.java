@@ -156,19 +156,12 @@ public class Model {
 		WebGLUniformLocation projectionUniform = glContext.getUniformLocation(shaderProgram, "uPMatrix");
 		glContext.uniformMatrix4fv(projectionUniform, false, perspectiveMatrix.getColumnWiseFlatData());
 		
-		if(isProc){
-			WebGLUniformLocation mvUniform = glContext.getUniformLocation(
-					getShaderProgram(glContext, isProc), "uMVMatrix");
-			glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
-			
-			WebGLUniformLocation lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
-			glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
-		}
+		WebGLUniformLocation mvUniform = glContext.getUniformLocation(
+				getShaderProgram(glContext, isProc), "uMVMatrix");
+		glContext.uniformMatrix4fv(mvUniform, false, resultingMatrix.getColumnWiseFlatData());
 		
-		if(! isProc) {
-			WebGLUniformLocation textureUniform = glContext.getUniformLocation(shaderProgram, "tex");
-			glContext.uniform1i(textureUniform, 0);
-		}
+		WebGLUniformLocation lightPositionUniform = glContext.getUniformLocation(shaderProgram, "uLightPosition");
+		glContext.uniform3f(lightPositionUniform, camera.getX(), camera.getY(), camera.getZ());
 	}
 	
 	/**

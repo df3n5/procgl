@@ -1,2 +1,3 @@
 # Module GwtProcDemos
 # RPC service class, partial path of RPC policy file
+com.google.gwt.logging.shared.RemoteLoggingService, A98BB7FD969019067AAB9968D3AF768E.gwt.rpc
